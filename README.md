@@ -1,6 +1,6 @@
 # Quick Cart - Local Grocery Delivery Platform
 
-Quick Cart is a comprehensive Django web application for local grocery and convenience store ordering with free delivery, suki discounts, and first-time customer promotions.
+Quick Cart is a comprehensive Django web application for local grocery and convenience store ordering with free delivery, suki discounts, and first-time customer promotions. Built with modern web technologies and designed for seamless user experience across all devices.
 
 ## 🌟 Features
 
@@ -12,19 +12,24 @@ Quick Cart is a comprehensive Django web application for local grocery and conve
 - **Real-time Stock Management** - Live inventory tracking and updates
 - **Order Tracking** - Complete order lifecycle from placement to delivery
 - **Responsive Design** - Mobile-friendly interface with modern UI
+- **Professional Product Images** - AI-generated product images from Pexels API
+- **Advanced Order Management** - Admin assigns riders to orders with real-time tracking
 
 ### User Roles
-- **Admin** - Full system management, analytics, user management
+- **Admin** - Full system management, analytics, user management, order assignment
 - **Staff/Rider** - Order management, delivery updates, inventory management
 - **Customer** - Shopping, order placement, order tracking, profile management
 
 ### Technical Features
 - **Django 5.x** - Modern Python web framework
 - **Role-based Access Control** - Secure user management system
-- **Bootstrap 5** - Responsive UI framework
+- **Bootstrap 5** - Responsive UI framework with modern design
 - **SQLite/PostgreSQL** - Flexible database support
 - **Session-based Cart** - Works for both authenticated and anonymous users
 - **AJAX Integration** - Smooth user experience with dynamic updates
+- **Pexels API Integration** - Automatic product image generation
+- **Conditional UI Layouts** - Navbar for guests, sidebar for authenticated users
+- **Bootstrap Modals** - Confirmation dialogs for critical actions
 
 ## 🎨 Design & Branding
 
@@ -214,6 +219,55 @@ The seed command creates:
 - **Touch Friendly** - Optimized for mobile shopping experience
 - **Fast Loading** - Optimized images and efficient code
 
+## 🎯 Recent Features & Updates
+
+### UI/UX Improvements (Latest)
+- **Conditional Layouts** - Navbar-only interface for guests, full sidebar for authenticated users
+- **Professional Product Images** - 27+ products with real images from Pexels API
+- **Enhanced Status Badges** - Color-coded order statuses with improved visibility
+- **Admin Dashboard Reorganization** - Recent Orders full-width, Low Stock Alert grid layout
+- **Logo Branding** - Quick Cart logo on login/register pages instead of text
+
+### Order Management System
+- **Admin Order Assignment** - Admins assign specific riders to orders
+- **Rider-Specific Visibility** - Riders only see orders assigned to them
+- **Order Workflow** - Customer → Admin → Rider assignment flow
+- **Real-time Status Updates** - Modal confirmations for status changes
+- **Order Tracking** - Customers can track their orders in real-time
+
+### Product Management
+- **Automated Image Generation** - Django management command to generate product images
+- **Pexels API Integration** - Free, high-quality product images
+- **Image Optimization** - Automatic resizing and JPEG conversion
+- **Batch Processing** - Generate images for all products or specific ones
+
+## 🖼️ Product Image Generation
+
+### Setup Instructions
+1. **Get Pexels API Key**
+   - Visit https://www.pexels.com/api/
+   - Sign up for a free account
+   - Copy your API key
+
+2. **Configure the Command**
+   - Open `store/management/commands/generate_product_images.py`
+   - Replace `YOUR_PEXELS_API_KEY` with your actual key
+
+3. **Run the Command**
+   ```bash
+   # Generate images for products without images
+   python manage.py generate_product_images
+   
+   # Force regenerate all product images
+   python manage.py generate_product_images --force
+   ```
+
+4. **Features**
+   - Automatic rate limiting (0.5s between requests)
+   - Image optimization (500x500px, JPEG format)
+   - Handles transparency conversion
+   - Detailed progress reporting
+
 ## 🚀 Deployment
 
 ### Production Checklist
@@ -222,11 +276,20 @@ The seed command creates:
 3. Set up email backend for notifications
 4. Configure static file serving
 5. Set up proper domain and SSL certificate
+6. Add `requests` library to requirements.txt (for image generation)
+7. Configure Pexels API key as environment variable
 
 ### Recommended Hosting
+- **Render** - Easy Django deployment with auto-deploy on git push
 - **Heroku** - Easy Django deployment
 - **DigitalOcean** - VPS with more control
 - **PythonAnywhere** - Python-focused hosting
+
+### Live Deployment
+- **Current URL:** https://quickcart-9zad.onrender.com
+- **Auto-Deploy:** Enabled on main branch push
+- **Database:** PostgreSQL on Render
+- **Static Files:** Served via Whitenoise
 
 ## 🤝 Contributing
 
