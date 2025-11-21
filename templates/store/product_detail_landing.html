@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }} - Quick Cart{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'store:product_list' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'store:category_products' product.category.slug %}">{{ product.category.name }}</a></li>
+            <li class="breadcrumb-item active">{{ product.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="product-image-container">
+                {% if product.image %}
+                <img src="{{ product.image.url }}" class="img-fluid rounded-3" alt="{{ product.name }}" id="mainImage">
+                {% else %}
+                <div class="bg-light rounded-3 d-flex align-items-center justify-content-center" style="height: 400px;">
+                    <i class="bi bi-image text-muted" style="font-size: 5rem;"></i>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="product-info">
+                <h1 class="mb-3">{{ product.name }}</h1>
+                
+                <div class="mb-3">
+                    <span class="badge bg-light text-dark me-2">{{ product.category.name }}</span>
+                    <span class="badge {% if product.get_stock_status == 'in_stock' %}bg-success{% elif product.get_stock_status == 'low_stock' %}bg-warning{% else %}bg-danger{% endif %}">
+                        {% if product.get_stock_status == 'in_stock' %}In Stock ({{ product.stock_quantity }})
+                        {% elif product.get_stock_status == 'low_stock' %}Low Stock ({{ product.stock_quantity }})
+                        {% else %}Out of Stock{% endif %}
+                    </span>
+                </div>
+                
+                <div class="product-price mb-4">
+                    <span class="h2 text-orange fw-bold">₱{{ product.price }}</span>
+                    {% if product.unit %}
+                    <span class="text-muted">/ {{ product.unit }}</span>
+                    {% endif %}
+                </div>
+                
+                <div class="product-description mb-4">
+                    <h5>Description</h5>
+                    <p class="text-muted">{{ product.description }}</p>
+                </div>
+                
+                {% if product.weight %}
+                <div class="mb-3">
+                    <strong>Weight:</strong> {{ product.weight }} kg
+                </div>
+                {% endif %}
+                
+                {% if user.is_authenticated and user.role == 'admin' %}
+                <div class="alert alert-info mb-4">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Admin View:</strong> You are viewing this product as an administrator. 
+                    <a href="/admin/store/product/{{ product.id }}/change/" target="_blank" class="alert-link">Edit Product</a>
+                </div>
+                {% elif product.is_in_stock %}
+                <form method="POST" action="{% url 'cart:add_to_cart' product.id %}" class="mb-4">
+                    {% csrf_token %}
+                    <div class="row align-items-end">
+                        <div class="col-md-4">
+                            <label for="quantity" class="form-label">Quantity</label>
+                            <input type="number" class="form-control" id="quantity" name="quantity" value="1" min="1" max="{{ product.stock_quantity }}">
+                        </div>
+                        <div class="col-md-8">
+                            <button type="submit" class="btn btn-add-to-cart btn-lg">
+                                <i class="bi bi-cart-plus me-2"></i>Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                {% else %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    This product is currently out of stock.
+                </div>
+                {% endif %}
+                
+                <!-- Product Features -->
+                <div class="product-features">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="feature-icon feature-green mx-auto">
+                                <i class="bi bi-truck"></i>
+                            </div>
+                            <small class="text-muted">Free Delivery</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="feature-icon feature-orange mx-auto">
+                                <i class="bi bi-shield-check"></i>
+                            </div>
+                            <small class="text-muted">Fresh Quality</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="feature-icon feature-blue mx-auto">
+                                <i class="bi bi-clock"></i>
+                            </div>
+                            <small class="text-muted">Same Day</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Related Products -->
+    {% if related_products %}
+    <section class="mt-5">
+        <h3 class="mb-4">Related Products</h3>
+        <div class="row">
+            {% for product in related_products %}
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card product-card h-100">
+                    <div class="position-relative">
+                        <a href="{% url 'store:product_detail' product.slug %}">
+                            {% if product.image %}
+                            <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                            {% else %}
+                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center">
+                                <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                            </div>
+                            {% endif %}
+                        </a>
+                        
+                        <span class="badge stock-badge {% if product.get_stock_status == 'in_stock' %}badge-in-stock{% elif product.get_stock_status == 'low_stock' %}badge-low-stock{% else %}badge-out-of-stock{% endif %}">
+                            {% if product.get_stock_status == 'in_stock' %}In Stock
+                            {% elif product.get_stock_status == 'low_stock' %}Low Stock
+                            {% else %}Out of Stock{% endif %}
+                        </span>
+                    </div>
+                    
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            <a href="{% url 'store:product_detail' product.slug %}" class="text-decoration-none text-dark">
+                                {{ product.name }}
+                            </a>
+                        </h6>
+                        <div class="product-price">₱{{ product.price }}</div>
+                        
+                        {% if product.is_in_stock %}
+                        <form method="POST" action="{% url 'cart:add_to_cart' product.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="btn btn-add-to-cart btn-sm w-100">
+                                <i class="bi bi-cart-plus me-1"></i>Add to Cart
+                            </button>
+                        </form>
+                        {% else %}
+                        <button class="btn btn-secondary btn-sm w-100" disabled>
+                            Out of Stock
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

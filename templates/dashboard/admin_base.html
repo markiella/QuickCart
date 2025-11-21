@@ -164,38 +164,22 @@
                     </nav>
                     
                     <!-- Sidebar Footer with User Menu -->
-                    <div class="mt-auto border-top border-secondary">
-                        <div class="dropdown dropup">
-                            <button class="btn btn-dark w-100 text-start py-3 border-0 rounded-0" type="button" data-bs-toggle="dropdown">
-                                <div class="d-flex align-items-center">
-                                    <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center me-3">
-                                        <i class="bi bi-person-fill text-white"></i>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <div class="fw-semibold">{{ user.get_full_name|default:user.username }}</div>
-                                        <small class="text-muted">{{ user.role|title }}</small>
-                                    </div>
-                                    <i class="bi bi-chevron-up"></i>
-                                </div>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-dark w-100 mb-2">
-                                <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">
-                                    <i class="bi bi-person me-2"></i>Profile
-                                </a></li>
-                                <li><a class="dropdown-item" href="{% url 'home' %}">
-                                    <i class="bi bi-house me-2"></i>View Store
-                                </a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <form method="post" action="{% url 'accounts:logout' %}" class="m-0">
-                                        {% csrf_token %}
-                                        <button type="submit" class="dropdown-item text-danger">
-                                            <i class="bi bi-box-arrow-right me-2"></i>Logout
-                                        </button>
-                                    </form>
-                                </li>
-                            </ul>
+                    <div class="mt-auto border-top border-secondary p-3">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px; background: linear-gradient(135deg, var(--qc-orange) 0%, var(--qc-blue) 100%);">
+                                <i class="bi bi-person-fill text-white"></i>
+                            </div>
+                            <div>
+                                <div class="fw-semibold text-white">{{ user.get_full_name|default:user.username }}</div>
+                                <small class="text-muted">{{ user.role|title }}</small>
+                            </div>
                         </div>
+                        <form method="post" action="{% url 'accounts:logout' %}" class="w-100">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger w-100" style="background: #dc3545; border: none; font-weight: 600; padding: 0.75rem;">
+                                <i class="bi bi-box-arrow-right me-2"></i>Logout
+                            </button>
+                        </form>
                     </div>
             </div>
         </div>
@@ -254,32 +238,22 @@
                     </nav>
                     
                     <!-- Mobile User Menu -->
-                    <div class="mt-auto border-top border-secondary">
-                        <div class="p-3">
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center me-3">
-                                    <i class="bi bi-person-fill text-white"></i>
-                                </div>
-                                <div>
-                                    <div class="fw-semibold">{{ user.get_full_name|default:user.username }}</div>
-                                    <small class="text-muted">{{ user.role|title }}</small>
-                                </div>
+                    <div class="mt-auto border-top border-secondary p-3">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px; background: linear-gradient(135deg, var(--qc-orange) 0%, var(--qc-blue) 100%);">
+                                <i class="bi bi-person-fill text-white"></i>
                             </div>
-                            <div class="d-grid gap-2">
-                                <a href="{% url 'accounts:profile' %}" class="btn btn-outline-light btn-sm" data-bs-dismiss="offcanvas">
-                                    <i class="bi bi-person me-2"></i>Profile
-                                </a>
-                                <a href="{% url 'home' %}" class="btn btn-outline-light btn-sm" data-bs-dismiss="offcanvas">
-                                    <i class="bi bi-house me-2"></i>View Store
-                                </a>
-                                <form method="post" action="{% url 'accounts:logout' %}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-outline-danger btn-sm w-100">
-                                        <i class="bi bi-box-arrow-right me-2"></i>Logout
-                                    </button>
-                                </form>
+                            <div>
+                                <div class="fw-semibold text-white">{{ user.get_full_name|default:user.username }}</div>
+                                <small class="text-muted">{{ user.role|title }}</small>
                             </div>
                         </div>
+                        <form method="post" action="{% url 'accounts:logout' %}" class="w-100">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger w-100" style="background: #dc3545; border: none; font-weight: 600; padding: 0.75rem;" data-bs-dismiss="offcanvas">
+                                <i class="bi bi-box-arrow-right me-2"></i>Logout
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>

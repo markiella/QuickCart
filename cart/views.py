@@ -12,7 +12,9 @@ def cart_detail(request):
     context = {
         'cart': cart,
     }
-    return render(request, 'cart/cart_detail.html', context)
+    # Use landing template for unauthenticated users
+    template = 'cart/cart_landing.html' if not request.user.is_authenticated else 'cart/cart_detail.html'
+    return render(request, template, context)
 
 @require_POST
 def add_to_cart(request, product_id):

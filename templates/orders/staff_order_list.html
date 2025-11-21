@@ -3,6 +3,56 @@
 {% block title %}Order Management - Quick Cart{% endblock %}
 
 {% block content %}
+<style>
+    /* Status Badge Styling - Override Bootstrap */
+    .badge.order-status {
+        font-weight: 700 !important;
+        padding: 0.5rem 0.75rem !important;
+        border-radius: 6px !important;
+        font-size: 0.85rem !important;
+        display: inline-block !important;
+        min-width: 100px !important;
+        text-align: center !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+        border: 1px solid !important;
+    }
+    
+    .badge.order-status.status-pending {
+        background-color: #ffc107 !important;
+        color: #000 !important;
+        border-color: #ffb300 !important;
+    }
+    
+    .badge.order-status.status-confirmed {
+        background-color: #17a2b8 !important;
+        color: #fff !important;
+        border-color: #138496 !important;
+    }
+    
+    .badge.order-status.status-preparing {
+        background-color: #667eea !important;
+        color: #fff !important;
+        border-color: #5568d3 !important;
+    }
+    
+    .badge.order-status[class*="status-out"] {
+        background-color: #ff6b35 !important;
+        color: #fff !important;
+        border-color: #e55a2b !important;
+    }
+    
+    .badge.order-status.status-delivered {
+        background-color: #28a745 !important;
+        color: #fff !important;
+        border-color: #218838 !important;
+    }
+    
+    .badge.order-status.status-cancelled {
+        background-color: #dc3545 !important;
+        color: #fff !important;
+        border-color: #c82333 !important;
+    }
+</style>
 <div class="container-fluid my-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2><i class="bi bi-list-check me-2"></i>Order Management</h2>

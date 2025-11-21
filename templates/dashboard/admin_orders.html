@@ -3,6 +3,56 @@
 {% block title %}Orders Management - Quick Cart Admin{% endblock %}
 
 {% block admin_content %}
+<style>
+    /* Status Badge Styling - Override Bootstrap */
+    .badge.order-status {
+        font-weight: 700 !important;
+        padding: 0.5rem 0.75rem !important;
+        border-radius: 6px !important;
+        font-size: 0.85rem !important;
+        display: inline-block !important;
+        min-width: 100px !important;
+        text-align: center !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+        border: 1px solid !important;
+    }
+    
+    .badge.order-status.status-pending {
+        background-color: #ffc107 !important;
+        color: #000 !important;
+        border-color: #ffb300 !important;
+    }
+    
+    .badge.order-status.status-confirmed {
+        background-color: #17a2b8 !important;
+        color: #fff !important;
+        border-color: #138496 !important;
+    }
+    
+    .badge.order-status.status-preparing {
+        background-color: #667eea !important;
+        color: #fff !important;
+        border-color: #5568d3 !important;
+    }
+    
+    .badge.order-status[class*="status-out"] {
+        background-color: #ff6b35 !important;
+        color: #fff !important;
+        border-color: #e55a2b !important;
+    }
+    
+    .badge.order-status.status-delivered {
+        background-color: #28a745 !important;
+        color: #fff !important;
+        border-color: #218838 !important;
+    }
+    
+    .badge.order-status.status-cancelled {
+        background-color: #dc3545 !important;
+        color: #fff !important;
+        border-color: #c82333 !important;
+    }
+</style>
 <div class="container-fluid my-4">
     <!-- Orders List View -->
     <div id="ordersList">
@@ -362,19 +412,43 @@ function backToOrdersList() {
     window.scrollTo(0, 0);
 }
 
-function updateOrderStatus(orderId, status) {
+let pendingStatusChange = null;
+
+function updateOrderStatus(orderId, newStatus) {
+    // Store the pending change and show modal
+    pendingStatusChange = { orderId, newStatus };
+    const modal = new bootstrap.Modal(document.getElementById('statusChangeModal'));
+    
+    // Update modal message
+    const statusText = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
+    document.getElementById('statusChangeMessage').textContent = `Are you sure you want to change the status to "${statusText}"?`;
+    
+    modal.show();
+}
+
+function confirmStatusChange() {
+    if (!pendingStatusChange) return;
+    
+    const { orderId, newStatus } = pendingStatusChange;
+    
     fetch(`/dashboard/update-order-status/${orderId}/`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
         },
-        body: JSON.stringify({ status: status })
+        body: JSON.stringify({ status: newStatus })
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
             showNotification('Order status updated successfully!', 'success', 2000);
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('statusChangeModal')).hide();
+            // Reload order details
+            if (pendingStatusChange.orderId) {
+                viewOrderDetails(pendingStatusChange.orderId);
+            }
         } else {
             showNotification('Error updating order status: ' + data.error, 'error', 3000);
         }
@@ -382,6 +456,9 @@ function updateOrderStatus(orderId, status) {
     .catch(error => {
         console.error('Error:', error);
         showNotification('Error updating order status', 'error', 3000);
+    })
+    .finally(() => {
+        pendingStatusChange = null;
     });
 }
 
@@ -435,3 +512,26 @@ function showNotification(message, type = 'success', duration = 3000) {
 </script>
 {% endblock %}
 {% endblock %}
+
+<!-- Status Change Confirmation Modal -->
+<div class="modal fade" id="statusChangeModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle me-2 text-warning"></i>Confirm Status Change
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="statusChangeMessage" class="mb-0">Are you sure you want to change the order status?</p>
+            </div>
+            <div class="modal-footer border-top">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="confirmStatusChange()">
+                    <i class="bi bi-check-circle me-1"></i>Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

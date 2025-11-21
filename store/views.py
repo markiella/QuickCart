@@ -27,6 +27,15 @@ def product_list(request):
     products = Product.objects.filter(is_available=True)
     categories = Category.objects.filter(is_active=True)
     
+    # If not authenticated, show landing page
+    if not request.user.is_authenticated:
+        featured_products = Product.objects.filter(is_featured=True, is_available=True)[:6]
+        context = {
+            'categories': categories,
+            'featured_products': featured_products,
+        }
+        return render(request, 'store/landing.html', context)
+    
     # Filter by category
     category_slug = request.GET.get('category')
     if category_slug:
@@ -86,7 +95,9 @@ def product_detail(request, slug):
         'related_products': related_products,
     }
     
-    return render(request, 'store/product_detail.html', context)
+    # Use landing template for unauthenticated users
+    template = 'store/product_detail_landing.html' if not request.user.is_authenticated else 'store/product_detail.html'
+    return render(request, template, context)
 
 def category_products(request, slug):
     category = get_object_or_404(Category, slug=slug, is_active=True)
@@ -114,7 +125,9 @@ def category_products(request, slug):
         'sort_by': sort_by,
     }
     
-    return render(request, 'store/category_products.html', context)
+    # Use landing template for unauthenticated users
+    template = 'store/category_landing.html' if not request.user.is_authenticated else 'store/category_products.html'
+    return render(request, template, context)
 
 def live_search(request):
     """AJAX live search endpoint"""

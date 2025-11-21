@@ -3,47 +3,224 @@
 {% block title %}My Orders - Quick Cart{% endblock %}
 
 {% block content %}
+<style>
+    .orders-table-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+    
+    .orders-table {
+        margin: 0;
+    }
+    
+    .orders-table thead {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        color: white;
+    }
+    
+    .orders-table thead th {
+        padding: 1.25rem;
+        font-weight: 600;
+        border: none;
+        vertical-align: middle;
+    }
+    
+    .orders-table tbody tr {
+        border-bottom: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+    
+    .orders-table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .orders-table tbody td {
+        padding: 1.25rem;
+        vertical-align: middle;
+    }
+    
+    .order-number {
+        font-weight: 600;
+        color: var(--qc-orange);
+        font-size: 0.95rem;
+    }
+    
+    .order-date {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .status-badge {
+        padding: 0.5rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+    
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .status-confirmed {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .status-preparing {
+        background: #cfe2ff;
+        color: #084298;
+    }
+    
+    .status-out_for_delivery {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .status-delivered {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .status-cancelled {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .order-total {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--qc-orange);
+    }
+    
+    .order-items-count {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .delivery-address {
+        font-size: 0.9rem;
+        color: #495057;
+        max-width: 200px;
+    }
+    
+    .payment-method {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .action-buttons .btn-sm {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+    }
+    
+    @media (max-width: 768px) {
+        .orders-table thead {
+            display: none;
+        }
+        
+        .orders-table tbody tr {
+            display: block;
+            margin-bottom: 1rem;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+        }
+        
+        .orders-table tbody td {
+            display: block;
+            text-align: right;
+            padding-left: 50%;
+            position: relative;
+            border: none;
+        }
+        
+        .orders-table tbody td:before {
+            content: attr(data-label);
+            position: absolute;
+            left: 1.25rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+    }
+</style>
+
 <div class="container my-5">
     <h2 class="mb-4">
         <i class="bi bi-bag me-2"></i>My Orders
     </h2>
     
     {% if page_obj %}
-    <div class="row">
-        {% for order in page_obj %}
-        <div class="col-12 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-md-3">
-                            <h6 class="mb-1">Order #{{ order.order_number }}</h6>
-                            <small class="text-muted">{{ order.created_at|date:"M d, Y - g:i A" }}</small>
-                        </div>
-                        <div class="col-md-2">
-                            <span class="badge order-status status-{{ order.status }}">
-                                {{ order.get_status_display }}
-                            </span>
-                        </div>
-                        <div class="col-md-2">
-                            <strong>₱{{ order.total_amount }}</strong><br>
-                            <small class="text-muted">{{ order.items.count }} item{{ order.items.count|pluralize }}</small>
-                        </div>
-                        <div class="col-md-3">
-                            <small class="text-muted">
-                                <i class="bi bi-geo-alt me-1"></i>
-                                {{ order.delivery_address|truncatechars:30 }}
-                            </small>
-                        </div>
-                        <div class="col-md-2 text-end">
+    <div class="orders-table-container">
+        <table class="table orders-table">
+            <thead>
+                <tr>
+                    <th><i class="bi bi-hash me-2"></i>Order Number</th>
+                    <th><i class="bi bi-calendar me-2"></i>Order Date</th>
+                    <th><i class="bi bi-info-circle me-2"></i>Status</th>
+                    <th><i class="bi bi-box me-2"></i>Items</th>
+                    <th><i class="bi bi-credit-card me-2"></i>Payment</th>
+                    <th><i class="bi bi-geo-alt me-2"></i>Delivery Address</th>
+                    <th><i class="bi bi-cash-coin me-2"></i>Total Amount</th>
+                    <th><i class="bi bi-eye me-2"></i>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in page_obj %}
+                <tr>
+                    <td data-label="Order Number">
+                        <span class="order-number">#{{ order.order_number }}</span>
+                    </td>
+                    <td data-label="Order Date">
+                        <div class="order-date">{{ order.created_at|date:"M d, Y" }}</div>
+                        <small class="text-muted">{{ order.created_at|time:"g:i A" }}</small>
+                    </td>
+                    <td data-label="Status">
+                        <span class="status-badge status-{{ order.status }}">
+                            <i class="bi bi-circle-fill me-1" style="font-size: 0.6rem;"></i>
+                            {{ order.get_status_display }}
+                        </span>
+                    </td>
+                    <td data-label="Items">
+                        <span class="order-items-count">
+                            {{ order.items.count }} item{{ order.items.count|pluralize }}
+                        </span>
+                    </td>
+                    <td data-label="Payment Method">
+                        <span class="payment-method">
+                            {% if order.payment_method == 'cod' %}
+                            <i class="bi bi-cash-coin me-1"></i>Cash on Delivery
+                            {% elif order.payment_method == 'online' %}
+                            <i class="bi bi-credit-card me-1"></i>Online Payment
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td data-label="Delivery Address">
+                        <small class="delivery-address" title="{{ order.delivery_address }}">
+                            {{ order.delivery_address|truncatechars:35 }}
+                        </small>
+                    </td>
+                    <td data-label="Total Amount">
+                        <span class="order-total">₱{{ order.total_amount }}</span>
+                    </td>
+                    <td data-label="Action">
+                        <div class="action-buttons">
                             <a href="{% url 'orders:order_detail' order.id %}" class="btn btn-outline-primary btn-sm">
-                                <i class="bi bi-eye me-1"></i>View Details
+                                <i class="bi bi-eye me-1"></i>View
                             </a>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
     
     <!-- Pagination -->

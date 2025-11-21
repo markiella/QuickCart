@@ -142,6 +142,69 @@ def order_detail(request, order_id):
     
     return render(request, 'orders/order_detail.html', context)
 
+@login_required
+def edit_order(request, order_id):
+    """Allow customers to edit pending, confirmed, and preparing orders"""
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    
+    # Only allow editing orders that haven't been shipped yet
+    editable_statuses = ['pending', 'confirmed', 'preparing']
+    if order.status not in editable_statuses:
+        messages.error(request, 'You can only edit orders that are pending, confirmed, or being prepared.')
+        return redirect('orders:order_detail', order_id=order.id)
+    
+    if request.method == 'POST':
+        form = CheckoutForm(request.POST, instance=order, user=request.user)
+        if form.is_valid():
+            order = form.save()
+            messages.success(request, 'Order updated successfully!')
+            return redirect('orders:order_detail', order_id=order.id)
+    else:
+        form = CheckoutForm(instance=order, user=request.user)
+    
+    context = {
+        'form': form,
+        'order': order,
+        'is_edit': True,
+    }
+    
+    return render(request, 'orders/edit_order.html', context)
+
+@login_required
+def delete_order(request, order_id):
+    """Allow customers to delete pending, confirmed, and preparing orders"""
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    
+    # Only allow deleting orders that haven't been shipped yet
+    deletable_statuses = ['pending', 'confirmed', 'preparing']
+    if order.status not in deletable_statuses:
+        messages.error(request, 'You can only cancel orders that are pending, confirmed, or being prepared.')
+        return redirect('orders:order_detail', order_id=order.id)
+    
+    if request.method == 'POST':
+        # Restore stock quantities
+        for item in order.items.all():
+            product = item.product
+            product.stock_quantity += item.quantity
+            product.save()
+        
+        # Update user stats
+        user = request.user
+        user.total_orders -= 1
+        user.save()
+        
+        order_number = order.order_number
+        order.delete()
+        
+        messages.success(request, f'Order {order_number} has been cancelled and deleted.')
+        return redirect('orders:order_list')
+    
+    context = {
+        'order': order,
+    }
+    
+    return render(request, 'orders/delete_order.html', context)
+
 # Staff/Admin/Rider views
 @login_required
 def staff_order_list(request):
@@ -149,18 +212,19 @@ def staff_order_list(request):
         messages.error(request, 'Access denied.')
         return redirect('store:product_list')
     
-    orders = Order.objects.all()
+    # Admin sees all orders, staff/rider only see assigned orders
+    if request.user.role == 'admin':
+        orders = Order.objects.all()
+    elif request.user.role in ['staff', 'rider']:
+        # Staff and riders ONLY see orders assigned to them
+        orders = Order.objects.filter(assigned_staff=request.user)
+    else:
+        orders = Order.objects.none()
     
     # Filter by status
     status_filter = request.GET.get('status')
     if status_filter:
         orders = orders.filter(status=status_filter)
-    
-    # Filter by assigned staff/rider (for staff and rider users)
-    if request.user.role == 'staff':
-        orders = orders.filter(assigned_staff=request.user)
-    elif request.user.role == 'rider':
-        orders = orders.filter(assigned_staff=request.user)
     
     paginator = Paginator(orders, 20)
     page_number = request.GET.get('page')

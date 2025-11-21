@@ -1,0 +1,214 @@
+{% extends 'sidebar_base.html' %}
+
+{% block title %}Cancel Order #{{ order.order_number }} - Quick Cart{% endblock %}
+
+{% block content %}
+<style>
+    .delete-container {
+        max-width: 600px;
+        margin: 3rem auto;
+    }
+    
+    .delete-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    
+    .delete-header {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+    
+    .delete-header i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+    
+    .delete-header h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+    }
+    
+    .delete-body {
+        padding: 2rem;
+    }
+    
+    .warning-box {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .warning-box h5 {
+        color: #856404;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .warning-box p {
+        color: #856404;
+        margin: 0;
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+    
+    .order-details {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+    
+    .detail-label {
+        color: #6c757d;
+        font-weight: 500;
+    }
+    
+    .detail-value {
+        color: #2c3e50;
+        font-weight: 600;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .btn-delete {
+        flex: 1;
+        background: #dc3545;
+        border: none;
+        color: white;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-delete:hover {
+        background: #c82333;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+    }
+    
+    .btn-cancel {
+        flex: 1;
+        background: #e9ecef;
+        border: none;
+        color: #2c3e50;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .btn-cancel:hover {
+        background: #dee2e6;
+        color: #2c3e50;
+    }
+    
+    .info-text {
+        color: #6c757d;
+        font-size: 0.9rem;
+        text-align: center;
+        margin-top: 1rem;
+    }
+</style>
+
+<div class="delete-container">
+    <div class="delete-card">
+        <!-- Header -->
+        <div class="delete-header">
+            <i class="bi bi-exclamation-triangle"></i>
+            <h2>Cancel Order?</h2>
+        </div>
+        
+        <!-- Body -->
+        <div class="delete-body">
+            <div class="warning-box">
+                <h5><i class="bi bi-info-circle me-2"></i>Important Notice</h5>
+                <p>
+                    You are about to cancel this order. This action <strong>cannot be undone</strong>. 
+                    Your order will be permanently deleted and stock quantities will be restored.
+                </p>
+            </div>
+            
+            <!-- Order Details -->
+            <div class="order-details">
+                <div class="detail-row">
+                    <span class="detail-label"><i class="bi bi-receipt me-2"></i>Order Number</span>
+                    <span class="detail-value">#{{ order.order_number }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label"><i class="bi bi-calendar me-2"></i>Order Date</span>
+                    <span class="detail-value">{{ order.created_at|date:"M d, Y" }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label"><i class="bi bi-box me-2"></i>Items</span>
+                    <span class="detail-value">{{ order.items.count }} item{{ order.items.count|pluralize }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label"><i class="bi bi-cash-coin me-2"></i>Total Amount</span>
+                    <span class="detail-value" style="color: #dc3545;">₱{{ order.total_amount }}</span>
+                </div>
+            </div>
+            
+            <!-- What Happens -->
+            <div style="background: #e7f3ff; border-left: 4px solid #0066cc; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                <h5 style="color: #0066cc; font-weight: 600; margin-bottom: 0.5rem;">
+                    <i class="bi bi-info-circle me-2"></i>What Happens Next
+                </h5>
+                <ul style="color: #0066cc; margin: 0; padding-left: 1.5rem; font-size: 0.9rem;">
+                    <li>Your order will be deleted from the system</li>
+                    <li>Product stock quantities will be restored</li>
+                    <li>You will be redirected to your orders list</li>
+                </ul>
+            </div>
+            
+            <!-- Action Buttons -->
+            <form method="POST" style="margin: 0;">
+                {% csrf_token %}
+                <div class="action-buttons">
+                    <button type="submit" class="btn-delete">
+                        <i class="bi bi-trash me-1"></i>Yes, Cancel Order
+                    </button>
+                    <a href="{% url 'orders:order_detail' order.id %}" class="btn-cancel">
+                        <i class="bi bi-x-circle me-1"></i>No, Keep Order
+                    </a>
+                </div>
+            </form>
+            
+            <p class="info-text">
+                <i class="bi bi-shield-check me-1"></i>
+                This action only applies to <strong>pending orders</strong>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

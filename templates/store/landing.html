@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Quick Cart - Fresh Groceries & Local Delivery{% endblock %}
+
+{% block content %}
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, var(--qc-orange) 0%, var(--qc-blue) 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+        border-radius: 12px;
+    }
+    
+    .hero-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+        color: white;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.1rem;
+        opacity: 1;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+        color: rgba(255, 255, 255, 0.95);
+    }
+    
+    .feature-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+    }
+    
+    .feature-green {
+        background: rgba(40, 167, 69, 0.5);
+    }
+    
+    .feature-orange {
+        background: rgba(255, 159, 64, 0.5);
+    }
+    
+    .feature-purple {
+        background: rgba(102, 126, 234, 0.5);
+    }
+    
+    .feature-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .feature-item h5 {
+        color: white;
+        margin: 0;
+        font-weight: 600;
+    }
+    
+    .feature-item p {
+        color: rgba(255, 255, 255, 0.9);
+        margin: 0;
+        font-size: 0.95rem;
+    }
+    
+    .cta-button {
+        background: white;
+        color: var(--qc-orange);
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-block;
+        text-decoration: none;
+    }
+    
+    .cta-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        color: var(--qc-orange);
+    }
+    
+    .categories-section {
+        padding: 3rem 0;
+    }
+    
+    .category-badge {
+        display: inline-block;
+        background: #f0f0f0;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #2c3e50;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .category-badge:hover {
+        background: var(--qc-orange);
+        color: white;
+    }
+    
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+    
+    .product-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .product-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+    }
+    
+    .product-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        background: #f0f0f0;
+    }
+    
+    .product-info {
+        padding: 1rem;
+    }
+    
+    .product-name {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.25rem;
+        font-size: 0.95rem;
+    }
+    
+    .product-category {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-bottom: 0.5rem;
+    }
+    
+    .product-price {
+        font-weight: 700;
+        color: var(--qc-orange);
+        font-size: 1.1rem;
+    }
+</style>
+
+<div class="container-fluid my-4">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="hero-title"><i class="bi bi-cart3 me-2"></i>Fresh Groceries Delivered Free</h1>
+                <p class="hero-subtitle">Local store shopping with suki discounts and first-time customer promos. Fresh vegetables, snacks, and ready-made meals delivered to your door.</p>
+                
+                <div class="mb-4">
+                    <div class="feature-item">
+                        <div class="feature-icon feature-green">
+                            <i class="bi bi-truck"></i>
+                        </div>
+                        <div>
+                            <h5>Free Local Delivery</h5>
+                            <p>No delivery fees within our area</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon feature-orange">
+                            <i class="bi bi-percent"></i>
+                        </div>
+                        <div>
+                            <h5>Suki Discounts</h5>
+                            <p>Up to 15% off for loyal customers</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon feature-purple">
+                            <i class="bi bi-gift"></i>
+                        </div>
+                        <div>
+                            <h5>First-Time Promos</h5>
+                            <p>Special discounts for new customers</p>
+                        </div>
+                    </div>
+                </div>
+                
+                
+            </div>
+            
+            <div class="col-lg-6 text-center">
+                <img src="{% static 'img/logo.png' %}" alt="Quick Cart Logo" style="max-width: 300px; width: 100%;">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Categories Section -->
+    <div class="categories-section">
+        <h3 class="mb-3">Shop by Category</h3>
+        <div>
+            {% for category in categories %}
+            <a href="{% url 'store:category_products' category.slug %}" class="category-badge">
+                {{ category.name }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Featured Products -->
+    {% if featured_products %}
+    <div class="mt-5">
+        <h3 class="mb-3">Featured Products</h3>
+        <div class="product-grid">
+            {% for product in featured_products %}
+            <a href="{% url 'store:product_detail' product.slug %}" class="product-card text-decoration-none">
+                {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+                {% else %}
+                <div class="product-image d-flex align-items-center justify-content-center">
+                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                </div>
+                {% endif %}
+                <div class="product-info">
+                    <div class="product-name">{{ product.name }}</div>
+                    <div class="product-category">{{ product.category.name }}</div>
+                    <div class="product-price">₱{{ product.price }}</div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

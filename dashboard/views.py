@@ -26,17 +26,26 @@ def dashboard_home(request):
     end_date = timezone.now()
     start_date = end_date - timedelta(days=30)
     
+    # Filter orders based on user role
+    if request.user.role == 'admin':
+        orders_queryset = Order.objects.all()
+    elif request.user.role in ['staff', 'rider']:
+        # Staff and riders only see orders assigned to them
+        orders_queryset = Order.objects.filter(assigned_staff=request.user)
+    else:
+        orders_queryset = Order.objects.none()
+    
     # Basic statistics
-    total_orders = Order.objects.count()
-    total_revenue = Order.objects.filter(status='delivered').aggregate(
+    total_orders = orders_queryset.count()
+    total_revenue = orders_queryset.filter(status='delivered').aggregate(
         total=Sum('total_amount')
     )['total'] or 0
     
-    pending_orders = Order.objects.filter(status='pending').count()
+    pending_orders = orders_queryset.filter(status='pending').count()
     total_customers = User.objects.filter(role='customer').count()
     
     # Recent orders
-    recent_orders = Order.objects.all().order_by('-created_at')[:10]
+    recent_orders = orders_queryset.order_by('-created_at')[:10]
     
     # Top selling products (last 30 days)
     top_products = OrderItem.objects.filter(
