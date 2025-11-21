@@ -1,0 +1,620 @@
+{% extends 'sidebar_base.html' %}
+{% load static %}
+
+{% block title %}Quick Cart - Fresh Groceries & Local Delivery{% endblock %}
+
+{% block content %}
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, var(--qc-orange) 0%, var(--qc-blue) 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+        border-radius: 12px;
+    }
+    
+    .hero-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+        color: white;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.1rem;
+        opacity: 1;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+        color: rgba(255, 255, 255, 0.95);
+    }
+    
+    .feature-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+    }
+    
+    .feature-green {
+        background: rgba(40, 167, 69, 0.5);
+    }
+    
+    .feature-orange {
+        background: rgba(255, 159, 64, 0.5);
+    }
+    
+    .feature-blue {
+        background: rgba(102, 126, 234, 0.5);
+    }
+    
+    .feature-icon + div h6 {
+        color: white;
+        font-weight: 600;
+    }
+    
+    .feature-icon + div small {
+        color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .product-card {
+        border: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+    
+    .product-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+    }
+    
+    .product-card .card-img-top {
+        height: 200px;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    
+    .product-card:hover .card-img-top {
+        transform: scale(1.05);
+    }
+    
+    .product-card .card-body {
+        padding: 1.25rem;
+    }
+    
+    .card-title {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+    
+    .card-text {
+        color: #6c757d;
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+        line-height: 1.5;
+    }
+    
+    .product-price {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--qc-orange);
+        margin-bottom: 1rem;
+    }
+    
+    .btn-add-to-cart {
+        background: linear-gradient(135deg, var(--qc-orange) 0%, var(--qc-blue) 100%);
+        border: none;
+        color: white;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        width: 100%;
+    }
+    
+    .btn-add-to-cart:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(241, 90, 36, 0.4);
+        color: white;
+    }
+    
+    .btn-sm {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+    }
+    
+    .stock-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 0.75rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: 6px;
+        font-weight: 600;
+    }
+    
+    .badge-in-stock {
+        background: #28a745;
+        color: white;
+    }
+    
+    .badge-low-stock {
+        background: #ffc107;
+        color: #333;
+    }
+    
+    .badge-out-of-stock {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .search-container {
+        margin-bottom: 2rem;
+    }
+    
+    .form-control {
+        border: 1px solid #dee2e6;
+        border-radius: 25px;
+        padding: 0.75rem 1.5rem;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: var(--qc-orange);
+        box-shadow: 0 0 0 3px rgba(241, 90, 36, 0.1);
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, var(--qc-orange) 0%, var(--qc-blue) 100%);
+        border: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(241, 90, 36, 0.4);
+    }
+    
+    .live-search-results {
+        top: 100%;
+        margin-top: 0.5rem;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    
+    .pagination {
+        margin-top: 2rem;
+    }
+    
+    .page-link {
+        color: var(--qc-orange);
+        border-color: #dee2e6;
+        border-radius: 6px;
+        margin: 0 0.25rem;
+    }
+    
+    .page-link:hover {
+        background: #f8f9fa;
+        color: var(--qc-blue);
+    }
+    
+    .page-item.active .page-link {
+        background: linear-gradient(135deg, var(--qc-orange) 0%, var(--qc-blue) 100%);
+        border-color: var(--qc-orange);
+    }
+    
+    section h2 {
+        color: #2c3e50;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+    }
+    
+    .text-white {
+        color: #ffffff;
+    }
+
+    .text-muted {
+        color: rgba(255, 255, 255, 0.85) !important;
+    }
+</style>
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="hero-title">Fresh Groceries<br><span class="text-white">Delivered Free</span></h1>
+                <p class="hero-subtitle">Local store shopping with suki discounts and first-time customer promos. Fresh vegetables, snacks, and ready-made meals delivered to your door.</p>
+                <div class="d-flex gap-3 mb-4">
+                    <div class="feature-icon feature-green">
+                        <i class="bi bi-truck"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Free Local Delivery</h6>
+                        <small class="text-muted">No delivery fees within our area</small>
+                    </div>
+                </div>
+                <div class="d-flex gap-3 mb-4">
+                    <div class="feature-icon feature-orange">
+                        <i class="bi bi-percent"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Suki Discounts</h6>
+                        <small class="text-muted">Up to 15% off for loyal customers</small>
+                    </div>
+                </div>
+                <div class="d-flex gap-3">
+                    <div class="feature-icon feature-blue">
+                        <i class="bi bi-gift"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">First-Time Promos</h6>
+                        <small class="text-muted">Special discounts for new customers</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <img src="{% static 'img/logo.png' %}" alt="Fresh Groceries" class="img-fluid rounded-3" style="max-height: 400px;">
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <!-- Filters and Search -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                <span class="fw-semibold me-2">Categories:</span>
+                <a href="{% url 'store:product_list' %}" class="btn btn-sm {% if not current_category %}btn-primary{% else %}btn-outline-primary{% endif %}">All</a>
+                {% for category in categories %}
+                <a href="{% url 'store:category_products' category.slug %}" class="btn btn-sm {% if current_category.id == category.id %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                    {{ category.name }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <form method="GET" class="d-flex">
+                {% if current_category %}
+                <input type="hidden" name="category" value="{{ current_category.slug }}">
+                {% endif %}
+                <select name="sort" class="form-select me-2" onchange="this.form.submit()">
+                    <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Name A-Z</option>
+                    <option value="price_low" {% if sort_by == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                    <option value="price_high" {% if sort_by == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                    <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest First</option>
+                </select>
+            </form>
+        </div>
+    </div>
+
+    <!-- Featured Products -->
+    {% if featured_products and not current_category and not search_query %}
+    <section class="mb-5">
+        <h2 class="mb-4">
+            <i class="bi bi-star-fill text-warning me-2"></i>Featured Products
+        </h2>
+        <div class="row">
+            {% for product in featured_products %}
+            <div class="col-lg-2 col-md-4 col-sm-6 mb-4">
+                <div class="card product-card h-100">
+                    <div class="position-relative">
+                        {% if product.image %}
+                        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                        {% else %}
+                        <div class="card-img-top bg-light d-flex flex-column align-items-center justify-content-center" style="height: 150px;">
+                            <div style="font-size: 3rem;">
+                                {% if 'tomato' in product.name|lower %}🍅
+                                {% elif 'lettuce' in product.name|lower %}🥬
+                                {% elif 'onion' in product.name|lower %}🧅
+                                {% elif 'carrot' in product.name|lower %}🥕
+                                {% elif 'potato' in product.name|lower %}🥔
+                                {% elif 'banana' in product.name|lower %}🍌
+                                {% elif 'apple' in product.name|lower %}🍎
+                                {% elif 'orange' in product.name|lower %}🍊
+                                {% elif 'mango' in product.name|lower %}🥭
+                                {% elif 'chip' in product.name|lower %}🍟
+                                {% elif 'water' in product.name|lower %}💧
+                                {% elif 'cola' in product.name|lower %}🥤
+                                {% elif 'juice' in product.name|lower %}🧃
+                                {% elif 'tea' in product.name|lower %}🧋
+                                {% elif 'chicken' in product.name|lower %}🍗
+                                {% elif 'beef' in product.name|lower %}🥩
+                                {% elif 'rice' in product.name|lower %}🍚
+                                {% elif 'egg' in product.name|lower %}🥚
+                                {% elif 'milk' in product.name|lower %}🥛
+                                {% elif 'cheese' in product.name|lower %}🧀
+                                {% elif 'oil' in product.name|lower %}🫒
+                                {% elif 'sugar' in product.name|lower %}🍯
+                                {% else %}📦{% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Stock Badge -->
+                        <span class="badge stock-badge {% if product.get_stock_status == 'in_stock' %}badge-in-stock{% elif product.get_stock_status == 'low_stock' %}badge-low-stock{% else %}badge-out-of-stock{% endif %}">
+                            {% if product.get_stock_status == 'in_stock' %}In Stock
+                            {% elif product.get_stock_status == 'low_stock' %}Low Stock
+                            {% else %}Out of Stock{% endif %}
+                        </span>
+                    </div>
+                    
+                    <div class="card-body">
+                        <h6 class="card-title">{{ product.name }}</h6>
+                        <p class="card-text small">{{ product.description|truncatewords:8 }}</p>
+                        <div class="product-price">₱{{ product.price }}</div>
+                        
+                        {% if user.is_authenticated and user.role == 'admin' %}
+                        <a href="{% url 'store:product_detail' product.slug %}" class="btn btn-outline-info btn-sm w-100">
+                            <i class="bi bi-eye me-1"></i>View Details
+                        </a>
+                        {% elif product.is_in_stock %}
+                        <form method="POST" action="{% url 'cart:add_to_cart' product.id %}" class="add-to-cart-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="btn btn-add-to-cart btn-sm w-100">
+                                <i class="bi bi-cart-plus me-1"></i>Add to Cart
+                            </button>
+                        </form>
+                        {% else %}
+                        <button class="btn btn-secondary btn-sm w-100" disabled>
+                            <i class="bi bi-x-circle me-1"></i>Out of Stock
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Products Grid -->
+    <section>
+        <!-- Search Bar -->
+        <div class="row mb-4">
+            <div class="col-lg-8">
+                {% if current_category %}
+                <h2 class="mb-3">{{ current_category.name }}</h2>
+                {% elif search_query %}
+                <h2 class="mb-3">Search Results for "{{ search_query }}"</h2>
+                {% else %}
+                <h2 class="mb-3">All Products</h2>
+                {% endif %}
+            </div>
+            <div class="col-lg-4">
+                <div class="search-container position-relative">
+                    <form class="d-flex" method="GET" action="{% url 'store:product_list' %}">
+                        {% if current_category %}
+                        <input type="hidden" name="category" value="{{ current_category.slug }}">
+                        {% endif %}
+                        <div class="position-relative flex-grow-1 me-2">
+                            <input class="form-control pe-5" type="search" name="search" id="liveSearchInput"
+                                   placeholder="Search products..." value="{{ request.GET.search }}"
+                                   style="border-radius: 25px;" autocomplete="off">
+                            <div class="position-absolute top-50 end-0 translate-middle-y me-3">
+                                <i class="bi bi-search text-muted" id="searchIcon"></i>
+                                <div class="spinner-border spinner-border-sm text-primary d-none" id="searchSpinner" role="status">
+                                    <span class="visually-hidden">Searching...</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" type="submit" style="border-radius: 25px; min-width: 50px;">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </form>
+                    
+                    <!-- Live Search Results Dropdown -->
+                    <div id="liveSearchResults" class="live-search-results position-absolute w-100" style="display: none; z-index: 1000;">
+                        <div class="card shadow-lg border-0">
+                            <div class="card-body p-0">
+                                <div id="searchResultsList"></div>
+                                <div id="searchLoading" class="text-center p-3" style="display: none;">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <span class="ms-2">Searching...</span>
+                                </div>
+                                <div id="noResults" class="text-center p-3 text-muted" style="display: none;">
+                                    <i class="bi bi-search"></i>
+                                    <div>No products found</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if page_obj %}
+        <div class="row">
+            {% for product in page_obj %}
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <div class="card product-card h-100">
+                    <div class="position-relative">
+                        <a href="{% url 'store:product_detail' product.slug %}">
+                            {% if product.image %}
+                            <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                            {% else %}
+                            <div class="card-img-top bg-light d-flex flex-column align-items-center justify-content-center" style="height: 200px;">
+                                {% if 'tomato' in product.name|lower %}🍅
+                                {% elif 'lettuce' in product.name|lower %}🥬
+                                {% elif 'onion' in product.name|lower %}🧅
+                                {% elif 'carrot' in product.name|lower %}🥕
+                                {% elif 'potato' in product.name|lower %}🥔
+                                {% elif 'banana' in product.name|lower %}🍌
+                                {% elif 'apple' in product.name|lower %}🍎
+                                {% elif 'orange' in product.name|lower %}🍊
+                                {% elif 'mango' in product.name|lower %}🥭
+                                {% elif 'chip' in product.name|lower %}🍟
+                                {% elif 'water' in product.name|lower %}💧
+                                {% elif 'cola' in product.name|lower %}🥤
+                                {% elif 'juice' in product.name|lower %}🧃
+                                {% elif 'tea' in product.name|lower %}🧋
+                                {% elif 'chicken' in product.name|lower %}🍗
+                                {% elif 'beef' in product.name|lower %}🥩
+                                {% elif 'rice' in product.name|lower %}🍚
+                                {% elif 'egg' in product.name|lower %}🥚
+                                {% elif 'milk' in product.name|lower %}🥛
+                                {% elif 'cheese' in product.name|lower %}🧀
+                                {% elif 'oil' in product.name|lower %}🫒
+                                {% elif 'sugar' in product.name|lower %}🍯
+                                {% else %}📦{% endif %}
+                                <div class="mt-2 text-center">
+                                    <small class="text-muted">{{ product.name }}</small>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </a>
+                        
+                        <!-- Stock Badge -->
+                        <span class="badge stock-badge {% if product.get_stock_status == 'in_stock' %}badge-in-stock{% elif product.get_stock_status == 'low_stock' %}badge-low-stock{% else %}badge-out-of-stock{% endif %}">
+                            {% if product.get_stock_status == 'in_stock' %}In Stock
+                            {% elif product.get_stock_status == 'low_stock' %}Low Stock
+                            {% else %}Out of Stock{% endif %}
+                        </span>
+                    </div>
+                    
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a href="{% url 'store:product_detail' product.slug %}" class="text-decoration-none text-dark">
+                                {{ product.name }}
+                            </a>
+                        </h5>
+                        <p class="card-text">{{ product.description|truncatewords:10 }}</p>
+                        <div class="product-price">₱{{ product.price }}</div>
+                        
+                        {% if user.is_authenticated and user.role == 'admin' %}
+                        <a href="{% url 'store:product_detail' product.slug %}" class="btn btn-outline-info w-100">
+                            <i class="bi bi-eye me-1"></i>View Details
+                        </a>
+                        {% elif product.is_in_stock %}
+                        <form method="POST" action="{% url 'cart:add_to_cart' product.id %}" class="add-to-cart-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="btn btn-add-to-cart w-100">
+                                <i class="bi bi-cart-plus me-1"></i>Add to Cart
+                            </button>
+                        </form>
+                        {% else %}
+                        <button class="btn btn-secondary w-100" disabled>
+                            <i class="bi bi-x-circle me-1"></i>Out of Stock
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Products pagination" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}{% if current_category %}&category={{ current_category.slug }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">Previous</a>
+                </li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}{% if current_category %}&category={{ current_category.slug }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">{{ num }}</a>
+                </li>
+                {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}{% if current_category %}&category={{ current_category.slug }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-search text-muted" style="font-size: 4rem;"></i>
+            <h4 class="mt-3 text-muted">No products found</h4>
+            <p class="text-muted">Try adjusting your search or browse our categories.</p>
+            <a href="{% url 'store:product_list' %}" class="btn btn-primary">View All Products</a>
+        </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Add to cart with AJAX
+document.addEventListener('DOMContentLoaded', function() {
+    const forms = document.querySelectorAll('.add-to-cart-form');
+    
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const button = form.querySelector('button[type="submit"]');
+            const originalText = button.innerHTML;
+            
+            // Show loading state
+            button.innerHTML = '<span class="loading"></span> Adding...';
+            button.disabled = true;
+            
+            // Submit form via AJAX
+            fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form),
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update cart count in navbar
+                    const cartBadge = document.querySelector('.navbar .badge');
+                    if (cartBadge) {
+                        cartBadge.textContent = data.cart_total_items;
+                    }
+                    
+                    // Show success feedback
+                    button.innerHTML = '<i class="bi bi-check me-1"></i>Added!';
+                    button.classList.remove('btn-add-to-cart');
+                    button.classList.add('btn-success');
+                    
+                    // Reset button after 2 seconds
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.classList.remove('btn-success');
+                        button.classList.add('btn-add-to-cart');
+                        button.disabled = false;
+                    }, 2000);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                button.innerHTML = originalText;
+                button.disabled = false;
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

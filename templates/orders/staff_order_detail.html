@@ -1,0 +1,241 @@
+{% extends 'sidebar_base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Order #{{ order.order_number }} - Staff Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="bi bi-receipt me-2"></i>Order #{{ order.order_number }}
+        </h2>
+        <a href="{% url 'orders:staff_order_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Back to Orders
+        </a>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Order Status Update -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="bi bi-gear me-2"></i>Update Delivery Status</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="statusForm">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="id_status" class="form-label">Status*</label>
+                            <select name="status" id="id_status" class="form-select">
+                                {% for value, label in form.status.field.choices %}
+                                <option value="{{ value }}" {% if order.status == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <i class="bi bi-check-circle me-2"></i>Update Delivery Status
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <script>
+                document.getElementById('statusForm').addEventListener('submit', function(e) {
+                    const statusSelect = document.getElementById('id_status');
+                    const currentStatus = '{{ order.status }}';
+                    const newStatus = statusSelect.value;
+                    
+                    if (currentStatus !== newStatus) {
+                        const statusLabels = {
+                            'pending': 'Pending',
+                            'confirmed': 'Confirmed',
+                            'preparing': 'Preparing',
+                            'out_for_delivery': 'Out for Delivery',
+                            'delivered': 'Delivered',
+                            'cancelled': 'Cancelled'
+                        };
+                        
+                        const message = `Are you sure you want to change the status from "${statusLabels[currentStatus]}" to "${statusLabels[newStatus]}"?`;
+                        
+                        if (!confirm(message)) {
+                            e.preventDefault();
+                            return false;
+                        }
+                    }
+                });
+            </script>
+            
+            <!-- Order Items -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="bi bi-bag me-2"></i>Order Items</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.items.all %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ item.product_name }}</strong><br>
+                                        <small class="text-muted">{{ item.product.category.name }}</small>
+                                    </td>
+                                    <td>₱{{ item.product_price }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td><strong>₱{{ item.total_price }}</strong></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="3">Subtotal</th>
+                                    <th>₱{{ order.subtotal }}</th>
+                                </tr>
+                                {% if order.discount_amount > 0 %}
+                                <tr class="text-success">
+                                    <th colspan="3">Discount</th>
+                                    <th>-₱{{ order.discount_amount }}</th>
+                                </tr>
+                                {% endif %}
+                                <tr>
+                                    <th colspan="3">Delivery</th>
+                                    <th class="text-success">FREE</th>
+                                </tr>
+                                <tr class="table-primary">
+                                    <th colspan="3">Total</th>
+                                    <th>₱{{ order.total_amount }}</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Status History -->
+            {% if order.status_history.all %}
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-clock-history me-2"></i>Status History</h5>
+                </div>
+                <div class="card-body">
+                    {% for history in order.status_history.all %}
+                    <div class="d-flex align-items-start mb-3 {% if not forloop.last %}border-bottom pb-3{% endif %}">
+                        <div class="me-3">
+                            <span class="badge bg-secondary">{{ history.get_status_display }}</span>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between">
+                                <span class="fw-semibold">{{ history.get_status_display }}</span>
+                                <small class="text-muted">{{ history.created_at|date:"M d, Y - g:i A" }}</small>
+                            </div>
+                            {% if history.notes %}
+                            <p class="text-muted mb-0 mt-1">{{ history.notes }}</p>
+                            {% endif %}
+                            {% if history.changed_by %}
+                            <small class="text-muted">Updated by: {{ history.changed_by.get_full_name }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Current Status -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="bi bi-info-circle me-2"></i>Current Status</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <span class="badge order-status status-{{ order.status }}" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                            {{ order.get_status_display }}
+                        </span>
+                    </div>
+                    <p class="text-muted mb-0">Last updated: {{ order.updated_at|date:"M d, Y - g:i A" }}</p>
+                    {% if order.delivered_at %}
+                    <p class="text-success mb-0 mt-2">
+                        <i class="bi bi-check-circle me-1"></i>
+                        Delivered: {{ order.delivered_at|date:"M d, Y - g:i A" }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Customer Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="bi bi-person me-2"></i>Customer Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Name:</strong><br>
+                        {{ order.customer_name }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Email:</strong><br>
+                        <a href="mailto:{{ order.customer_email }}">{{ order.customer_email }}</a>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Phone:</strong><br>
+                        <a href="tel:{{ order.customer_phone }}">{{ order.customer_phone }}</a>
+                    </div>
+                    
+                    <div class="mb-0">
+                        <strong>Customer Type:</strong><br>
+                        {% if order.user.is_first_time_customer %}
+                        <span class="badge bg-info">First-time Customer</span>
+                        {% elif order.user.is_suki_customer %}
+                        <span class="badge bg-success">Suki Customer</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Regular Customer</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Delivery Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-geo-alt me-2"></i>Delivery Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Address:</strong><br>
+                        <span class="text-muted">{{ order.delivery_address }}</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Payment Method:</strong><br>
+                        <span class="badge bg-info">{{ order.get_payment_method_display }}</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Order Date:</strong><br>
+                        {{ order.created_at|date:"M d, Y - g:i A" }}
+                    </div>
+                    
+                    {% if order.notes %}
+                    <div class="mb-0">
+                        <strong>Special Instructions:</strong><br>
+                        <span class="text-muted">{{ order.notes }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

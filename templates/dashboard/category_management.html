@@ -1,0 +1,198 @@
+{% extends 'dashboard/admin_base.html' %}
+
+{% block title %}Category Management - Quick Cart{% endblock %}
+
+{% block admin_content %}
+<div class="mb-4">
+    <h2><i class="bi bi-grid me-2"></i>Category Management</h2>
+    <p class="text-muted">Manage product categories</p>
+</div>
+
+<!-- Category Statistics -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-grid-3x3-gap me-3" style="font-size: 2rem;"></i>
+                    <div>
+                        <h4>{{ categories|length }}</h4>
+                        <small>Total Categories</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-check-circle me-3" style="font-size: 2rem;"></i>
+                    <div>
+                        <h4>{{ categories|length }}</h4>
+                        <small>Active Categories</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-box-seam me-3" style="font-size: 2rem;"></i>
+                    <div>
+                        <h4>{{ total_products }}</h4>
+                        <small>Total Products</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Categories Grid -->
+<div class="row">
+    {% for category in categories %}
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="category-icon me-3">
+                        {% if 'vegetable' in category.name|lower %}🥬
+                        {% elif 'fruit' in category.name|lower %}🍎
+                        {% elif 'snack' in category.name|lower %}🍿
+                        {% elif 'beverage' in category.name|lower %}🥤
+                        {% elif 'meal' in category.name|lower %}🍱
+                        {% elif 'dairy' in category.name|lower %}🥛
+                        {% elif 'pantry' in category.name|lower %}🏪
+                        {% else %}📦{% endif %}
+                    </div>
+                    <div>
+                        <h5 class="card-title mb-1">{{ category.name }}</h5>
+                        <small class="text-muted">{{ category.products.count }} products</small>
+                    </div>
+                </div>
+                
+                <p class="card-text">{{ category.description|truncatechars:100 }}</p>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        {% if category.is_active %}
+                        <span class="badge bg-success">Active</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Inactive</span>
+                        {% endif %}
+                    </div>
+                    <button class="btn btn-sm btn-outline-info" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#categoryModal{{ category.id }}">
+                        <i class="bi bi-eye"></i> View
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Add Category Info -->
+<div class="card mt-4">
+    <div class="card-body text-center">
+        <i class="bi bi-info-circle text-muted me-2"></i>
+        <span class="text-muted">To create or edit categories, visit the Django Admin panel manually</span>
+    </div>
+</div>
+
+<!-- Category Detail Modals -->
+{% for category in categories %}
+<div class="modal fade" id="categoryModal{{ category.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Category Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <div class="category-icon-large mb-3">
+                        {% if 'vegetable' in category.name|lower %}🥬
+                        {% elif 'fruit' in category.name|lower %}🍎
+                        {% elif 'snack' in category.name|lower %}🍿
+                        {% elif 'beverage' in category.name|lower %}🥤
+                        {% elif 'meal' in category.name|lower %}🍱
+                        {% elif 'dairy' in category.name|lower %}🥛
+                        {% elif 'pantry' in category.name|lower %}🏪
+                        {% else %}📦{% endif %}
+                    </div>
+                    <h4>{{ category.name }}</h4>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Description:</strong><br>
+                    {{ category.description }}
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Slug:</strong><br>
+                        <code>{{ category.slug }}</code>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Status:</strong><br>
+                        {% if category.is_active %}
+                        <span class="badge bg-success">Active</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Inactive</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Products in this category:</strong><br>
+                    <span class="badge bg-primary">{{ category.products.count }} products</span>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Created:</strong> {{ category.created_at|date:"M d, Y g:i A" }}<br>
+                    <strong>Updated:</strong> {{ category.updated_at|date:"M d, Y g:i A" }}
+                </div>
+                
+                {% if category.products.exists %}
+                <div class="mt-4">
+                    <strong>Sample Products:</strong>
+                    <div class="mt-2">
+                        {% for product in category.products.all|slice:":5" %}
+                        <span class="badge bg-light text-dark me-1 mb-1">{{ product.name }}</span>
+                        {% endfor %}
+                        {% if category.products.count > 5 %}
+                        <span class="text-muted">... and {{ category.products.count|add:"-5" }} more</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.category-icon {
+    font-size: 2rem;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--qc-light-orange);
+    border-radius: 12px;
+}
+
+.category-icon-large {
+    font-size: 4rem;
+}
+</style>
+{% endblock %}

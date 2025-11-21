@@ -1,0 +1,300 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Panel - Quick Cart{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'img/logo.png' %}">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    
+    <!-- Admin Specific Styles -->
+    <style>
+    .nav-link.active {
+        border-radius: 0.375rem;
+        margin: 0 0.5rem;
+    }
+
+    .nav-link:hover {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        border-radius: 0.375rem;
+        margin: 0 0.5rem;
+    }
+
+    .min-vh-100 {
+        min-height: 100vh;
+    }
+
+    /* Admin Sidebar Styles */
+    .admin-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        overflow-y: auto;
+    }
+
+    /* User dropdown in sidebar footer */
+    .dropdown-menu-dark {
+        background-color: #343a40;
+        border: 1px solid #495057;
+    }
+
+    .dropdown-menu-dark .dropdown-item:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Mobile responsive adjustments */
+    @media (max-width: 767.98px) {
+        .admin-content {
+            margin-left: 0;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .admin-content {
+            margin-left: 25%;
+        }
+    }
+
+    @media (min-width: 992px) {
+        .admin-content {
+            margin-left: 16.666667%;
+        }
+    }
+
+    /* Offcanvas customization */
+    .offcanvas-start {
+        width: 280px;
+    }
+
+    /* User avatar styling */
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, var(--qc-orange) 0%, var(--qc-blue) 100%);
+    }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-light">
+    <!-- Mobile Header -->
+    <div class="d-md-none bg-dark text-white p-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <img src="{% static 'img/logo.png' %}" alt="Quick Cart Logo" style="height: 35px; width: auto; margin-right: 0.75rem;">
+                <div>
+                    <h6 class="mb-0">Quick Cart</h6>
+                    <small class="text-muted">{{ user.get_full_name|default:user.username }}</small>
+                </div>
+            </div>
+            <button class="btn btn-outline-light btn-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#adminSidebar">
+                <i class="bi bi-list"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="container-fluid p-0">
+        <!-- Desktop Sidebar (Fixed) -->
+        <div class="admin-sidebar d-none d-md-block bg-dark text-white" style="width: 16.666667%; z-index: 1000;">
+            <div class="d-flex flex-column h-100">
+                    <!-- Sidebar Header -->
+                    <div class="px-3 py-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <img src="{% static 'img/logo.png' %}" alt="Quick Cart Logo" style="height: 40px; width: auto; margin-right: 0.75rem;">
+                            <div>
+                                <h5 class="mb-0">Quick Cart</h5>
+                            </div>
+                        </div>
+                        <small class="text-muted">{{ user.get_full_name|default:user.username }}</small>
+                    </div>
+                    
+                    <!-- Sidebar Navigation -->
+                    <nav class="nav flex-column flex-grow-1">
+                        <a class="nav-link text-white {% if request.resolver_match.url_name == 'dashboard_home' %}active bg-primary{% endif %}" 
+                           href="{% url 'dashboard:home' %}">
+                            <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                        </a>
+                        
+                        <a class="nav-link text-white {% if request.resolver_match.url_name == 'analytics' %}active bg-primary{% endif %}" 
+                           href="{% url 'dashboard:analytics' %}">
+                            <i class="bi bi-graph-up me-2"></i>Analytics
+                        </a>
+                        
+                        <a class="nav-link text-white {% if request.resolver_match.url_name == 'inventory' %}active bg-primary{% endif %}" 
+                           href="{% url 'dashboard:inventory' %}">
+                            <i class="bi bi-boxes me-2"></i>Inventory
+                        </a>
+                        
+                        <a class="nav-link text-white {% if request.resolver_match.url_name == 'admin_orders' %}active bg-primary{% endif %}" 
+                           href="{% url 'dashboard:admin_orders' %}">
+                            <i class="bi bi-list-check me-2"></i>Orders
+                        </a>
+                        
+                        <hr class="text-secondary mx-3">
+                        
+                        <a class="nav-link text-white {% if request.resolver_match.url_name == 'user_management' %}active bg-primary{% endif %}" 
+                           href="{% url 'dashboard:user_management' %}">
+                            <i class="bi bi-people me-2"></i>Users
+                        </a>
+                        
+                        <a class="nav-link text-white {% if request.resolver_match.url_name == 'product_management' %}active bg-primary{% endif %}" 
+                           href="{% url 'dashboard:product_management' %}">
+                            <i class="bi bi-box me-2"></i>Products
+                        </a>
+                        
+                        <a class="nav-link text-white {% if request.resolver_match.url_name == 'category_management' %}active bg-primary{% endif %}" 
+                           href="{% url 'dashboard:category_management' %}">
+                            <i class="bi bi-grid me-2"></i>Categories
+                        </a>
+                        
+                        <a class="nav-link text-white {% if request.resolver_match.url_name == 'promo_management' %}active bg-primary{% endif %}" 
+                           href="{% url 'dashboard:promo_management' %}">
+                            <i class="bi bi-tag me-2"></i>Promo Codes
+                        </a>
+                    </nav>
+                    
+                    <!-- Sidebar Footer with User Menu -->
+                    <div class="mt-auto border-top border-secondary">
+                        <div class="dropdown dropup">
+                            <button class="btn btn-dark w-100 text-start py-3 border-0 rounded-0" type="button" data-bs-toggle="dropdown">
+                                <div class="d-flex align-items-center">
+                                    <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center me-3">
+                                        <i class="bi bi-person-fill text-white"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold">{{ user.get_full_name|default:user.username }}</div>
+                                        <small class="text-muted">{{ user.role|title }}</small>
+                                    </div>
+                                    <i class="bi bi-chevron-up"></i>
+                                </div>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-dark w-100 mb-2">
+                                <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">
+                                    <i class="bi bi-person me-2"></i>Profile
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'home' %}">
+                                    <i class="bi bi-house me-2"></i>View Store
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" action="{% url 'accounts:logout' %}" class="m-0">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+            </div>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="admin-content" style="margin-left: 16.666667%;">
+            <!-- Mobile Sidebar (Offcanvas) -->
+            <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="adminSidebar">
+                <div class="offcanvas-header bg-dark text-white">
+                    <h5 class="offcanvas-title"><i class="bi bi-shield-check me-2"></i>Admin Panel</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+                </div>
+                <div class="offcanvas-body bg-dark text-white p-0">
+                    <nav class="nav flex-column">
+                        <a class="nav-link text-white {% if request.resolver_match.url_name == 'dashboard_home' %}active bg-primary{% endif %}" 
+                           href="{% url 'dashboard:home' %}" data-bs-dismiss="offcanvas">
+                            <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                        </a>
+                        
+                        <a class="nav-link text-white {% if request.resolver_match.url_name == 'analytics' %}active bg-primary{% endif %}" 
+                           href="{% url 'dashboard:analytics' %}" data-bs-dismiss="offcanvas">
+                            <i class="bi bi-graph-up me-2"></i>Analytics
+                        </a>
+                        
+                        <a class="nav-link text-white {% if request.resolver_match.url_name == 'inventory' %}active bg-primary{% endif %}" 
+                           href="{% url 'dashboard:inventory' %}" data-bs-dismiss="offcanvas">
+                            <i class="bi bi-boxes me-2"></i>Inventory
+                        </a>
+                        
+                        <a class="nav-link text-white {% if request.resolver_match.url_name == 'admin_orders' %}active bg-primary{% endif %}" 
+                           href="{% url 'dashboard:admin_orders' %}" data-bs-dismiss="offcanvas">
+                            <i class="bi bi-list-check me-2"></i>Orders
+                        </a>
+                        
+                        <hr class="text-secondary mx-3">
+                        
+                        <a class="nav-link text-white {% if request.resolver_match.url_name == 'user_management' %}active bg-primary{% endif %}" 
+                           href="{% url 'dashboard:user_management' %}" data-bs-dismiss="offcanvas">
+                            <i class="bi bi-people me-2"></i>Users
+                        </a>
+                        
+                        <a class="nav-link text-white {% if request.resolver_match.url_name == 'product_management' %}active bg-primary{% endif %}" 
+                           href="{% url 'dashboard:product_management' %}" data-bs-dismiss="offcanvas">
+                            <i class="bi bi-box me-2"></i>Products
+                        </a>
+                        
+                        <a class="nav-link text-white {% if request.resolver_match.url_name == 'category_management' %}active bg-primary{% endif %}" 
+                           href="{% url 'dashboard:category_management' %}" data-bs-dismiss="offcanvas">
+                            <i class="bi bi-grid me-2"></i>Categories
+                        </a>
+                        
+                        <a class="nav-link text-white {% if request.resolver_match.url_name == 'promo_management' %}active bg-primary{% endif %}" 
+                           href="{% url 'dashboard:promo_management' %}" data-bs-dismiss="offcanvas">
+                            <i class="bi bi-tag me-2"></i>Promo Codes
+                        </a>
+                    </nav>
+                    
+                    <!-- Mobile User Menu -->
+                    <div class="mt-auto border-top border-secondary">
+                        <div class="p-3">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center me-3">
+                                    <i class="bi bi-person-fill text-white"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-semibold">{{ user.get_full_name|default:user.username }}</div>
+                                    <small class="text-muted">{{ user.role|title }}</small>
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'accounts:profile' %}" class="btn btn-outline-light btn-sm" data-bs-dismiss="offcanvas">
+                                    <i class="bi bi-person me-2"></i>Profile
+                                </a>
+                                <a href="{% url 'home' %}" class="btn btn-outline-light btn-sm" data-bs-dismiss="offcanvas">
+                                    <i class="bi bi-house me-2"></i>View Store
+                                </a>
+                                <form method="post" action="{% url 'accounts:logout' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                        <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="p-4">
+                {% block admin_content %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

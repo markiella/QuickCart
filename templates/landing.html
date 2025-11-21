@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Cart - Fresh Groceries Delivered Free</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, var(--qc-light-orange) 0%, var(--qc-light-green) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="%23ffffff" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="%23ffffff" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--qc-gray);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .hero-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+        }
+
+        .feature-item i {
+            font-size: 1.25rem;
+        }
+
+        .hero-image {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .product-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .product-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .product-info h6 {
+            margin: 0;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .price {
+            color: var(--qc-orange);
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        .delivery-badge {
+            background: var(--qc-green);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .features-section {
+            padding: 5rem 0;
+        }
+
+        .feature-box {
+            padding: 2rem 1rem;
+            height: 100%;
+        }
+
+        .feature-box h5 {
+            color: var(--qc-dark);
+            margin-bottom: 1rem;
+        }
+
+        .categories-section {
+            padding: 5rem 0;
+        }
+
+        .category-card {
+            display: block;
+            background: white;
+            border-radius: 12px;
+            padding: 2rem 1rem;
+            text-align: center;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            color: inherit;
+        }
+
+        .category-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .category-card h6 {
+            color: var(--qc-dark);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .cta-section {
+            background: var(--qc-dark);
+            color: white;
+        }
+
+        .cta-section h3 {
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .hero-features {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation Bar (Minimal) -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary" href="{% url 'home' %}">
+                <i class="bi bi-cart3 me-2"></i>Quick Cart
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'store:product_list' %}">
+                            <i class="bi bi-shop me-1"></i>Shop Now
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'accounts:profile' %}">
+                            <i class="bi bi-person-circle me-1"></i>{{ user.first_name|default:user.username }}
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="btn btn-outline-primary me-2" href="{% url 'accounts:login' %}">
+                            <i class="bi bi-box-arrow-in-right me-1"></i>Login
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-primary" href="{% url 'accounts:register' %}">
+                            <i class="bi bi-person-plus me-1"></i>Register
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center min-vh-100">
+            <div class="col-lg-6">
+                <div class="hero-content">
+                    <h1 class="hero-title">
+                        Fresh Groceries<br>
+                        <span class="text-orange">Delivered Free</span>
+                    </h1>
+                    <p class="hero-subtitle">
+                        Get fresh vegetables, fruits, and daily essentials delivered to your doorstep. 
+                        No delivery charges, special discounts for loyal customers!
+                    </p>
+                    
+                    <div class="hero-features mb-4">
+                        <div class="feature-item">
+                            <i class="bi bi-truck text-green"></i>
+                            <span>Free Local Delivery</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="bi bi-percent text-orange"></i>
+                            <span>Suki Discounts</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="bi bi-gift text-blue"></i>
+                            <span>First-Time Promos</span>
+                        </div>
+                    </div>
+                    
+                    <div class="hero-actions">
+                        <a href="{% url 'store:product_list' %}" class="btn btn-primary btn-lg me-3">
+                            <i class="bi bi-shop me-2"></i>Start Shopping
+                        </a>
+                        {% if not user.is_authenticated %}
+                        <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary btn-lg me-3">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                        </a>
+                        <a href="{% url 'accounts:register' %}" class="btn btn-success btn-lg">
+                            <i class="bi bi-person-plus me-2"></i>Sign Up Free
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="hero-image">
+                    <div class="hero-card">
+                        <div class="card-grid">
+                            <div class="product-card">
+                                <div class="product-icon bg-green">🥬</div>
+                                <div class="product-info">
+                                    <h6>Fresh Vegetables</h6>
+                                    <span class="price">₱25-₱80</span>
+                                </div>
+                            </div>
+                            <div class="product-card">
+                                <div class="product-icon bg-orange">🍎</div>
+                                <div class="product-info">
+                                    <h6>Fresh Fruits</h6>
+                                    <span class="price">₱30-₱120</span>
+                                </div>
+                            </div>
+                            <div class="product-card">
+                                <div class="product-icon bg-blue">🥛</div>
+                                <div class="product-info">
+                                    <h6>Dairy & Eggs</h6>
+                                    <span class="price">₱15-₱85</span>
+                                </div>
+                            </div>
+                            <div class="product-card">
+                                <div class="product-icon bg-success">🍱</div>
+                                <div class="product-info">
+                                    <h6>Ready Meals</h6>
+                                    <span class="price">₱45-₱150</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="delivery-badge">
+                            <i class="bi bi-truck"></i>
+                            <span>FREE Delivery</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2>Why Choose Quick Cart?</h2>
+            <p class="text-muted">Experience the best grocery shopping with our premium services</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="feature-box text-center">
+                    <div class="feature-icon feature-green mx-auto mb-3">
+                        <i class="bi bi-truck"></i>
+                    </div>
+                    <h5>Free Local Delivery</h5>
+                    <p class="text-muted">No delivery charges for all orders within the local area. Fast and reliable service.</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="feature-box text-center">
+                    <div class="feature-icon feature-orange mx-auto mb-3">
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                    <h5>Suki Rewards</h5>
+                    <p class="text-muted">Loyal customers get up to 15% discount. The more you shop, the more you save!</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="feature-box text-center">
+                    <div class="feature-icon feature-blue mx-auto mb-3">
+                        <i class="bi bi-gift"></i>
+                    </div>
+                    <h5>Welcome Promos</h5>
+                    <p class="text-muted">New customers enjoy special discounts and exclusive welcome offers.</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="feature-box text-center">
+                    <div class="feature-icon feature-success mx-auto mb-3">
+                        <i class="bi bi-leaf"></i>
+                    </div>
+                    <h5>Fresh Quality</h5>
+                    <p class="text-muted">Hand-picked fresh vegetables, fruits, and quality products delivered daily.</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="feature-box text-center">
+                    <div class="feature-icon feature-info mx-auto mb-3">
+                        <i class="bi bi-clock"></i>
+                    </div>
+                    <h5>Quick Service</h5>
+                    <p class="text-muted">Order today, delivered today. Fast processing and same-day delivery available.</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="feature-box text-center">
+                    <div class="feature-icon feature-warning mx-auto mb-3">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <h5>Safe & Secure</h5>
+                    <p class="text-muted">Secure payment processing and safe handling of all your orders.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="categories-section py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2>Shop by Category</h2>
+            <p class="text-muted">Browse our wide selection of fresh products</p>
+        </div>
+        
+        <div class="row">
+            {% for category in categories %}
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <a href="{% url 'store:category_products' category.slug %}" class="category-card">
+                    <div class="category-icon">
+                        {% if 'vegetable' in category.name|lower %}🥬
+                        {% elif 'fruit' in category.name|lower %}🍎
+                        {% elif 'snack' in category.name|lower %}🍿
+                        {% elif 'beverage' in category.name|lower %}🥤
+                        {% elif 'meal' in category.name|lower %}🍱
+                        {% elif 'dairy' in category.name|lower %}🥛
+                        {% else %}📦{% endif %}
+                    </div>
+                    <h6>{{ category.name }}</h6>
+                    <small class="text-muted">{{ category.products.count }} products</small>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'store:product_list' %}" class="btn btn-primary">
+                <i class="bi bi-grid me-2"></i>View All Products
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h3>Ready to Start Shopping?</h3>
+                <p style="color: white;">Join thousands of satisfied customers who trust Quick Cart for their daily needs.</p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                {% if user.is_authenticated %}
+                <a href="{% url 'store:product_list' %}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-shop me-2"></i>Start Shopping
+                </a>
+                {% else %}
+                <a href="{% url 'accounts:login' %}" class="btn btn-outline-light btn-lg me-2">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                </a>
+                <a href="{% url 'accounts:register' %}" class="btn btn-success btn-lg">
+                    <i class="bi bi-person-plus me-2"></i>Sign Up Now
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-dark text-light py-5 mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <h5 class="text-primary mb-3">
+                    <i class="bi bi-cart3 me-2"></i>Quick Cart
+                </h5>
+                <p class="text-muted">Your local grocery store with free delivery, suki discounts, and fresh products delivered to your door.</p>
+                <div class="d-flex gap-3">
+                    <a href="#" class="text-light"><i class="bi bi-facebook fs-4"></i></a>
+                    <a href="#" class="text-light"><i class="bi bi-instagram fs-4"></i></a>
+                    <a href="#" class="text-light"><i class="bi bi-twitter fs-4"></i></a>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <h6 class="text-primary">Quick Links</h6>
+                <ul class="list-unstyled">
+                    <li><a href="{% url 'home' %}" class="text-muted text-decoration-none">Home</a></li>
+                    <li><a href="#" class="text-muted text-decoration-none">About Us</a></li>
+                    <li><a href="#" class="text-muted text-decoration-none">Contact</a></li>
+                    <li><a href="{% url 'discounts:promo_list' %}" class="text-muted text-decoration-none">Promos</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3">
+                <h6 class="text-primary">Features</h6>
+                <ul class="list-unstyled text-muted">
+                    <li><i class="bi bi-truck text-success me-2"></i>Free Local Delivery</li>
+                    <li><i class="bi bi-percent text-warning me-2"></i>Suki Discounts</li>
+                    <li><i class="bi bi-gift text-danger me-2"></i>First-Time Promos</li>
+                    <li><i class="bi bi-clock text-info me-2"></i>Fresh Products Daily</li>
+                </ul>
+            </div>
+            <div class="col-md-3">
+                <h6 class="text-primary">Contact Info</h6>
+                <ul class="list-unstyled text-muted">
+                    <li><i class="bi bi-geo-alt me-2"></i>Local Area Only</li>
+                    <li><i class="bi bi-telephone me-2"></i>+63 123 456 7890</li>
+                    <li><i class="bi bi-envelope me-2"></i>info@quickcart.ph</li>
+                    <li><i class="bi bi-clock me-2"></i>Daily: 6AM - 10PM</li>
+                </ul>
+            </div>
+        </div>
+        <hr class="my-4">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <p class="text-muted mb-0">&copy; 2024 Quick Cart. All rights reserved.</p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <p class="text-muted mb-0">Made with <i class="bi bi-heart-fill text-danger"></i> for local communities</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Custom JS -->
+<script src="{% static 'js/main.js' %}"></script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

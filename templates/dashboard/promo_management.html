@@ -1,0 +1,280 @@
+{% extends 'dashboard/admin_base.html' %}
+
+{% block title %}Promo Code Management - Quick Cart{% endblock %}
+
+{% block admin_content %}
+<div class="mb-4">
+    <h2><i class="bi bi-tag me-2"></i>Promo Code Management</h2>
+    <p class="text-muted">Manage discount codes and promotions</p>
+</div>
+
+<!-- Promo Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-tags me-3" style="font-size: 2rem;"></i>
+                    <div>
+                        <h4>{{ promos|length }}</h4>
+                        <small>Total Promos</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-check-circle me-3" style="font-size: 2rem;"></i>
+                    <div>
+                        <h4>{% for promo in promos %}{% if promo.is_active %}{{ forloop.counter }}{% endif %}{% endfor %}</h4>
+                        <small>Active Promos</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-clock me-3" style="font-size: 2rem;"></i>
+                    <div>
+                        <h4>{% for promo in promos %}{% if promo.valid_until and promo.valid_until|date:"Y-m-d" < "now"|date:"Y-m-d" %}{{ forloop.counter }}{% endif %}{% endfor %}</h4>
+                        <small>Expired</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-graph-up me-3" style="font-size: 2rem;"></i>
+                    <div>
+                        <h4>0</h4>
+                        <small>Total Usage</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Promo Codes Table -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5>All Promo Codes</h5>
+        <div class="alert alert-info mb-0 py-2 px-3">
+            <i class="bi bi-info-circle me-2"></i>
+            <small>To create or edit promo codes, visit the Django Admin panel manually</small>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if promos %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Description</th>
+                        <th>Type</th>
+                        <th>Value</th>
+                        <th>Usage</th>
+                        <th>Valid Until</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for promo in promos %}
+                    <tr>
+                        <td>
+                            <strong class="text-primary">{{ promo.code }}</strong>
+                        </td>
+                        <td>{{ promo.description|truncatechars:40 }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if promo.discount_type == 'percentage' %}bg-success
+                                {% else %}bg-info{% endif %}">
+                                {% if promo.discount_type == 'percentage' %}
+                                    Percentage
+                                {% else %}
+                                    Fixed Amount
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            {% if promo.discount_type == 'percentage' %}
+                                <strong class="text-success">{{ promo.discount_value }}%</strong>
+                            {% else %}
+                                <strong class="text-success">₱{{ promo.discount_value }}</strong>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <span class="me-2">{{ promo.usage_count|default:0 }}</span>
+                                {% if promo.usage_limit %}
+                                <small class="text-muted">/ {{ promo.usage_limit }}</small>
+                                <div class="progress ms-2" style="width: 60px; height: 8px;">
+                                    <div class="progress-bar" 
+                                         style="width: {% if promo.usage_limit %}{% widthratio promo.usage_count|default:0 promo.usage_limit 100 %}{% else %}0{% endif %}%">
+                                    </div>
+                                </div>
+                                {% else %}
+                                <small class="text-muted">/ ∞</small>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            {% if promo.valid_until %}
+                                {{ promo.valid_until|date:"M d, Y" }}
+                            {% else %}
+                                <span class="text-muted">No expiry</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if promo.is_active %}
+                                {% if promo.valid_until and promo.valid_until|date:"Y-m-d" < "now"|date:"Y-m-d" %}
+                                    <span class="badge bg-warning">Expired</span>
+                                {% else %}
+                                    <span class="badge bg-success">Active</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-info" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#promoModal{{ promo.id }}">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-tag text-muted" style="font-size: 4rem;"></i>
+            <h4 class="mt-3 text-muted">No Promo Codes</h4>
+            <p class="text-muted">No promotional codes have been created yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Promo Detail Modals -->
+{% for promo in promos %}
+<div class="modal fade" id="promoModal{{ promo.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Promo Code Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <div class="promo-icon mb-3">
+                        <i class="bi bi-tag-fill text-primary" style="font-size: 3rem;"></i>
+                    </div>
+                    <h4 class="text-primary">{{ promo.code }}</h4>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Description:</strong><br>
+                    {{ promo.description }}
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Discount Type:</strong><br>
+                        <span class="badge 
+                            {% if promo.discount_type == 'percentage' %}bg-success
+                            {% else %}bg-info{% endif %}">
+                            {% if promo.discount_type == 'percentage' %}
+                                Percentage
+                            {% else %}
+                                Fixed Amount
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Discount Value:</strong><br>
+                        {% if promo.discount_type == 'percentage' %}
+                            <span class="text-success h5">{{ promo.discount_value }}%</span>
+                        {% else %}
+                            <span class="text-success h5">₱{{ promo.discount_value }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if promo.minimum_order_amount %}
+                <div class="mb-3">
+                    <strong>Minimum Order Amount:</strong><br>
+                    <span class="text-info">₱{{ promo.minimum_order_amount }}</span>
+                </div>
+                {% endif %}
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Usage Count:</strong><br>
+                        <span class="badge bg-primary">{{ promo.usage_count|default:0 }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Usage Limit:</strong><br>
+                        {% if promo.usage_limit %}
+                            <span class="badge bg-warning">{{ promo.usage_limit }}</span>
+                        {% else %}
+                            <span class="text-muted">Unlimited</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Valid From:</strong><br>
+                        {% if promo.valid_from %}
+                            {{ promo.valid_from|date:"M d, Y g:i A" }}
+                        {% else %}
+                            <span class="text-muted">No start date</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Valid Until:</strong><br>
+                        {% if promo.valid_until %}
+                            {{ promo.valid_until|date:"M d, Y g:i A" }}
+                        {% else %}
+                            <span class="text-muted">No expiry</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Status:</strong><br>
+                    {% if promo.is_active %}
+                        {% if promo.valid_until and promo.valid_until|date:"Y-m-d" < "now"|date:"Y-m-d" %}
+                            <span class="badge bg-warning">Expired</span>
+                        {% else %}
+                            <span class="badge bg-success">Active</span>
+                        {% endif %}
+                    {% else %}
+                        <span class="badge bg-secondary">Inactive</span>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Created:</strong> {{ promo.created_at|date:"M d, Y g:i A" }}<br>
+                    <strong>Updated:</strong> {{ promo.updated_at|date:"M d, Y g:i A" }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

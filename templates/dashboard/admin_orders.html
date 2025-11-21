@@ -1,0 +1,437 @@
+{% extends 'dashboard/admin_base.html' %}
+
+{% block title %}Orders Management - Quick Cart Admin{% endblock %}
+
+{% block admin_content %}
+<div class="container-fluid my-4">
+    <!-- Orders List View -->
+    <div id="ordersList">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="bi bi-list-check me-2"></i>Orders Management</h2>
+        </div>
+    
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label for="status" class="form-label">Filter by Status</label>
+                    <select name="status" id="status" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Orders</option>
+                        {% for status_code, status_name in status_choices %}
+                        <option value="{{ status_code }}" {% if status_filter == status_code %}selected{% endif %}>
+                            {{ status_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    {% if status_filter %}
+                    <a href="{% url 'dashboard:admin_orders' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle me-1"></i>Clear Filter
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Orders List -->
+    {% if page_obj %}
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>Customer</th>
+                            <th>Status</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th>Date</th>
+                            <th>Assigned Staff</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in page_obj %}
+                        <tr>
+                            <td>
+                                <strong>{{ order.order_number }}</strong>
+                            </td>
+                            <td>
+                                <div>
+                                    <strong>{{ order.customer_name }}</strong><br>
+                                    <small class="text-muted">{{ order.customer_phone }}</small>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge order-status status-{{ order.status }}">
+                                    {{ order.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ order.items.count }} item{{ order.items.count|pluralize }}</td>
+                            <td><strong>₱{{ order.total_amount }}</strong></td>
+                            <td>
+                                {{ order.created_at|date:"M d, Y" }}<br>
+                                <small class="text-muted">{{ order.created_at|date:"g:i A" }}</small>
+                            </td>
+                            <td>
+                                {% if order.assigned_staff %}
+                                <span class="badge bg-info">{{ order.assigned_staff.get_full_name }}</span>
+                                {% else %}
+                                <span class="text-muted">Unassigned</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-outline-primary view-order-btn" 
+                                        data-order-id="{{ order.id }}"
+                                        title="View Order Details">
+                                    <i class="bi bi-eye me-1"></i>View
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <nav aria-label="Orders pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Previous</a>
+            </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+            </li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ num }}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Next</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
+        <h4 class="mt-3 text-muted">No orders found</h4>
+        <p class="text-muted">
+            {% if status_filter %}
+            No orders with status "{{ status_filter|title }}" found.
+            {% else %}
+            No orders available at the moment.
+            {% endif %}
+        </p>
+        {% if status_filter %}
+        <a href="{% url 'dashboard:admin_orders' %}" class="btn btn-primary">View All Orders</a>
+        {% endif %}
+    </div>
+    {% endif %}
+    </div>
+    <!-- End Orders List View -->
+
+    <!-- Order Details View -->
+    <div id="orderDetailsView" style="display: none;">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="bi bi-receipt me-2"></i>Order Details</h2>
+            <button type="button" class="btn btn-outline-secondary" onclick="backToOrdersList()">
+                <i class="bi bi-arrow-left me-1"></i>Back to Orders
+            </button>
+        </div>
+        
+        <div id="orderDetailsContent">
+            <!-- Order details will be loaded here -->
+        </div>
+    </div>
+    <!-- End Order Details View -->
+</div>
+
+{% block extra_js %}
+<script>
+// Handle view order button clicks
+document.querySelectorAll('.view-order-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const orderId = this.getAttribute('data-order-id');
+        viewOrderDetails(orderId);
+    });
+});
+
+function viewOrderDetails(orderId) {
+    const contentDiv = document.getElementById('orderDetailsContent');
+    
+    // Show loading spinner
+    contentDiv.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+    
+    // Hide orders list and show details view
+    document.getElementById('ordersList').style.display = 'none';
+    document.getElementById('orderDetailsView').style.display = 'block';
+    
+    // Scroll to top
+    window.scrollTo(0, 0);
+    
+    const url = `/dashboard/get-order/${orderId}/`;
+    
+    // Fetch order details via AJAX
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                contentDiv.innerHTML = `<p class="text-danger">${data.error}</p>`;
+                return;
+            }
+            
+            // Build HTML for order details
+            let itemsHTML = '';
+            data.items.forEach(item => {
+                itemsHTML += `
+                    <tr>
+                        <td>${item.product_name}</td>
+                        <td>₱${parseFloat(item.price).toFixed(2)}</td>
+                        <td>${item.quantity}</td>
+                        <td>₱${parseFloat(item.total).toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+            
+            const statusBadgeClass = `status-${data.status_code}`;
+            
+            contentDiv.innerHTML = `
+                <!-- Header with Back Button -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4><i class="bi bi-receipt me-2"></i>Order #${data.order_number}</h4>
+                </div>
+                
+                <div class="row">
+                    <!-- Left Column: Order Management & Items -->
+                    <div class="col-lg-8">
+                        <!-- Assign Rider Card -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-white border-bottom">
+                                <h6 class="mb-0"><i class="bi bi-truck me-2"></i>Assign Rider</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-0">
+                                    <label for="riderSelect" class="form-label">Select Rider*</label>
+                                    <select class="form-select" id="riderSelect" onchange="assignStaff('${orderId}', this.value)">
+                                        <option value="">Select Rider</option>
+                                        <option value="unassign">Unassign</option>
+                                        <option disabled>─────────────────</option>
+                                        ${data.staff_list.map(rider => `<option value="${rider.id}" ${data.assigned_staff_id === rider.id ? 'selected' : ''}>${rider.name}</option>`).join('')}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Order Items Card -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-white border-bottom">
+                                <h6 class="mb-0"><i class="bi bi-box me-2"></i>Order Items</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-sm mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th class="ps-3">Product</th>
+                                                <th>Price</th>
+                                                <th>Quantity</th>
+                                                <th>Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${itemsHTML}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="p-3 border-top">
+                                    <div class="row text-end">
+                                        <div class="col-md-8 text-start"><strong>Subtotal</strong></div>
+                                        <div class="col-md-4"><strong>₱${parseFloat(data.subtotal).toFixed(2)}</strong></div>
+                                    </div>
+                                    <div class="row text-end">
+                                        <div class="col-md-8 text-start"><strong>Discount</strong></div>
+                                        <div class="col-md-4"><strong class="text-success">-₱${parseFloat(data.discount_amount).toFixed(2)}</strong></div>
+                                    </div>
+                                    <div class="row text-end">
+                                        <div class="col-md-8 text-start"><strong>Delivery</strong></div>
+                                        <div class="col-md-4"><strong class="text-success">${data.delivery_fee === '0.00' ? 'FREE' : '₱' + parseFloat(data.delivery_fee).toFixed(2)}</strong></div>
+                                    </div>
+                                    <hr>
+                                    <div class="row text-end">
+                                        <div class="col-md-8 text-start"><strong>Total</strong></div>
+                                        <div class="col-md-4"><strong class="text-primary h5">₱${parseFloat(data.total_amount).toFixed(2)}</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Status History Card -->
+                        <div class="card">
+                            <div class="card-header bg-white border-bottom">
+                                <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>Status History</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="timeline">
+                                    <div class="timeline-item">
+                                        <span class="badge bg-secondary">Current Status</span>
+                                        <p class="mb-1"><strong>${data.status}</strong></p>
+                                        <small class="text-muted">Last updated: ${data.created_at}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column: Status & Customer Info -->
+                    <div class="col-lg-4">
+                        <!-- Current Status Card -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-white border-bottom">
+                                <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Current Status</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <span class="badge order-status ${statusBadgeClass}" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                                        ${data.status}
+                                    </span>
+                                </div>
+                                <small class="text-muted">Last updated: ${data.created_at}</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Customer Information Card -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-white border-bottom">
+                                <h6 class="mb-0"><i class="bi bi-person me-2"></i>Customer Information</h6>
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-2"><strong>Name:</strong><br>${data.customer_name}</p>
+                                <p class="mb-2"><strong>Email:</strong><br><a href="mailto:${data.customer_email}">${data.customer_email}</a></p>
+                                <p class="mb-2"><strong>Phone:</strong><br><a href="tel:${data.customer_phone}">${data.customer_phone}</a></p>
+                                <p class="mb-0"><strong>Customer Type:</strong><br><span class="badge bg-success">${data.customer_type}</span></p>
+                            </div>
+                        </div>
+                        
+                        <!-- Delivery Information Card -->
+                        <div class="card">
+                            <div class="card-header bg-white border-bottom">
+                                <h6 class="mb-0"><i class="bi bi-geo-alt me-2"></i>Delivery Information</h6>
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-2"><strong>Address:</strong></p>
+                                <p class="text-muted">${data.delivery_address}</p>
+                                <p class="mb-0"><strong>Order Date:</strong><br>${data.created_at}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            contentDiv.innerHTML = `<p class="text-danger">Error loading order details: ${error.message}</p>`;
+        });
+}
+
+function backToOrdersList() {
+    document.getElementById('ordersList').style.display = 'block';
+    document.getElementById('orderDetailsView').style.display = 'none';
+    window.scrollTo(0, 0);
+}
+
+function updateOrderStatus(orderId, status) {
+    fetch(`/dashboard/update-order-status/${orderId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+        body: JSON.stringify({ status: status })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Order status updated successfully!', 'success', 2000);
+        } else {
+            showNotification('Error updating order status: ' + data.error, 'error', 3000);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error updating order status', 'error', 3000);
+    });
+}
+
+function assignStaff(orderId, staffId) {
+    const action = staffId === 'unassign' ? 'unassign' : 'assign';
+    const actualStaffId = staffId === 'unassign' ? null : staffId;
+    
+    fetch(`/dashboard/assign-staff/${orderId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+        body: JSON.stringify({ staff_id: actualStaffId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const message = actualStaffId ? 'Staff assigned successfully!' : 'Staff unassigned successfully!';
+            showNotification(message, 'success', 2000);
+        } else {
+            showNotification('Error assigning staff: ' + data.error, 'error', 3000);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error assigning staff', 'error', 3000);
+    });
+}
+
+function showNotification(message, type = 'success', duration = 3000) {
+    // Create a simple notification (you can enhance this with a toast library)
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
+    alertDiv.setAttribute('role', 'alert');
+    alertDiv.style.position = 'fixed';
+    alertDiv.style.top = '20px';
+    alertDiv.style.right = '20px';
+    alertDiv.style.zIndex = '9999';
+    alertDiv.style.minWidth = '300px';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => {
+        alertDiv.remove();
+    }, duration);
+}
+</script>
+{% endblock %}
+{% endblock %}

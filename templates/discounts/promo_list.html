@@ -1,0 +1,176 @@
+{% extends 'sidebar_base.html' %}
+
+{% block title %}Current Promos - Quick Cart{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h2><i class="bi bi-gift me-2"></i>Current Promotions</h2>
+        <p class="text-muted">Take advantage of these amazing deals and save on your orders!</p>
+    </div>
+    
+    {% if promos %}
+    <div class="row">
+        {% for promo in promos %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 border-primary">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4 class="mb-0">
+                        <i class="bi bi-tag-fill me-2"></i>{{ promo.code }}
+                    </h4>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        {% if promo.discount_type == 'percentage' %}
+                        <div class="display-6 text-orange fw-bold">{{ promo.discount_value }}%</div>
+                        <div class="text-muted">OFF</div>
+                        {% else %}
+                        <div class="display-6 text-orange fw-bold">₱{{ promo.discount_value }}</div>
+                        <div class="text-muted">OFF</div>
+                        {% endif %}
+                    </div>
+                    
+                    <p class="card-text">{{ promo.description }}</p>
+                    
+                    <div class="mb-3">
+                        <small class="text-muted">
+                            <i class="bi bi-calendar me-1"></i>
+                            Valid until {{ promo.valid_until|date:"M d, Y" }}
+                        </small>
+                    </div>
+                    
+                    {% if promo.minimum_order_amount > 0 %}
+                    <div class="alert alert-info small mb-3">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Minimum order: ₱{{ promo.minimum_order_amount }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if promo.maximum_discount_amount %}
+                    <div class="small text-muted mb-3">
+                        Maximum discount: ₱{{ promo.maximum_discount_amount }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if promo.usage_limit %}
+                    <div class="progress mb-3">
+                        <div class="progress-bar" role="progressbar" 
+                             style="width: {% widthratio promo.usage_count promo.usage_limit 100 %}%">
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        {{ promo.usage_count }} / {{ promo.usage_limit }} used
+                    </small>
+                    {% endif %}
+                </div>
+                <div class="card-footer text-center">
+                    <button class="btn btn-outline-primary" onclick="copyPromoCode('{{ promo.code }}')">
+                        <i class="bi bi-clipboard me-1"></i>Copy Code
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- How to Use -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h5><i class="bi bi-question-circle me-2"></i>How to Use Promo Codes</h5>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="feature-icon feature-orange me-3">
+                                    <i class="bi bi-cart3"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">1. Shop</h6>
+                                    <small class="text-muted">Add items to your cart</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="feature-icon feature-green me-3">
+                                    <i class="bi bi-credit-card"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">2. Checkout</h6>
+                                    <small class="text-muted">Proceed to checkout page</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="feature-icon feature-blue me-3">
+                                    <i class="bi bi-tag"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">3. Apply Code</h6>
+                                    <small class="text-muted">Enter promo code to save</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Call to Action -->
+    <div class="text-center mt-5">
+        <h4>Ready to Start Shopping?</h4>
+        <p class="text-muted mb-4">Browse our fresh products and use these promo codes at checkout!</p>
+        <a href="{% url 'store:product_list' %}" class="btn btn-primary btn-lg">
+            <i class="bi bi-shop me-2"></i>Start Shopping Now
+        </a>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-gift text-muted" style="font-size: 4rem;"></i>
+        <h4 class="mt-3 text-muted">No Active Promotions</h4>
+        <p class="text-muted">Check back later for exciting deals and discounts!</p>
+        <a href="{% url 'store:product_list' %}" class="btn btn-primary">
+            <i class="bi bi-shop me-2"></i>Browse Products
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function copyPromoCode(code) {
+    navigator.clipboard.writeText(code).then(function() {
+        // Show success message
+        const toast = document.createElement('div');
+        toast.className = 'toast align-items-center text-white bg-success border-0 position-fixed';
+        toast.style.top = '20px';
+        toast.style.right = '20px';
+        toast.style.zIndex = '9999';
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    Promo code "${code}" copied to clipboard!
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+        
+        // Remove toast after it's hidden
+        toast.addEventListener('hidden.bs.toast', function() {
+            toast.remove();
+        });
+    }).catch(function(err) {
+        alert('Promo code: ' + code);
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,472 @@
+{% extends 'sidebar_base.html' %}
+
+{% block title %}Order #{{ order.order_number }} - Quick Cart{% endblock %}
+
+{% block content %}
+<style>
+    .order-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .order-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .order-header p {
+        font-size: 0.95rem;
+        opacity: 0.95;
+    }
+    
+    .status-timeline {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 2rem 0;
+        position: relative;
+    }
+    
+    .status-timeline::before {
+        content: '';
+        position: absolute;
+        top: 20px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #e9ecef;
+        z-index: 0;
+    }
+    
+    .status-step {
+        flex: 1;
+        text-align: center;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .status-step.active .step-circle {
+        background: #667eea;
+        color: white;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+    
+    .status-step.completed .step-circle {
+        background: #28a745;
+        color: white;
+    }
+    
+    .step-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 0.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .step-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+        font-weight: 500;
+    }
+    
+    .card {
+        border: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-bottom: 1px solid #dee2e6;
+        border-radius: 12px 12px 0 0;
+        padding: 1.25rem;
+    }
+    
+    .card-header h5 {
+        margin: 0;
+        color: #2c3e50;
+        font-weight: 600;
+    }
+    
+    .order-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #e9ecef;
+        transition: background 0.2s ease;
+    }
+    
+    .order-item:last-child {
+        border-bottom: none;
+    }
+    
+    .order-item:hover {
+        background: #f8f9fa;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        border-radius: 8px;
+    }
+    
+    .item-details {
+        flex: 1;
+    }
+    
+    .item-name {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.25rem;
+    }
+    
+    .item-category {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .item-qty {
+        background: #f0f0f0;
+        padding: 0.25rem 0.75rem;
+        border-radius: 6px;
+        font-weight: 600;
+        color: #667eea;
+        min-width: 50px;
+        text-align: center;
+    }
+    
+    .item-price {
+        text-align: right;
+        min-width: 100px;
+    }
+    
+    .price-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .price-value {
+        font-weight: 700;
+        color: #2c3e50;
+        font-size: 1.1rem;
+    }
+    
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        font-size: 0.95rem;
+    }
+    
+    .summary-row.total {
+        border-top: 2px solid #e9ecef;
+        padding-top: 1rem;
+        margin-top: 1rem;
+        font-size: 1.25rem;
+        font-weight: 700;
+    }
+    
+    .summary-label {
+        color: #6c757d;
+    }
+    
+    .summary-value {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .summary-value.discount {
+        color: #28a745;
+    }
+    
+    .summary-value.total {
+        color: #667eea;
+        font-size: 1.3rem;
+    }
+    
+    .info-block {
+        margin-bottom: 1.5rem;
+    }
+    
+    .info-block:last-child {
+        margin-bottom: 0;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+    
+    .info-value {
+        color: #6c757d;
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+    
+    .info-value a {
+        color: #667eea;
+        text-decoration: none;
+    }
+    
+    .info-value a:hover {
+        text-decoration: underline;
+    }
+    
+    .badge-custom {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 0.85rem;
+    }
+    
+    .timeline-item {
+        display: flex;
+        gap: 1rem;
+        padding: 1rem 0;
+        border-left: 3px solid #e9ecef;
+        padding-left: 1rem;
+        margin-left: 0.5rem;
+    }
+    
+    .timeline-item.active {
+        border-left-color: #667eea;
+    }
+    
+    .timeline-marker {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #e9ecef;
+        margin-top: 0.5rem;
+        margin-left: -1.5rem;
+    }
+    
+    .timeline-item.active .timeline-marker {
+        background: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+    
+    .timeline-content h6 {
+        margin: 0 0 0.25rem 0;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .timeline-content small {
+        color: #6c757d;
+    }
+</style>
+
+<div class="container-fluid my-4">
+    <!-- Order Header -->
+    <div class="order-header">
+        <h1><i class="bi bi-receipt me-2"></i>Order #{{ order.order_number }}</h1>
+        <p>Placed on {{ order.created_at|date:"F d, Y" }} at {{ order.created_at|date:"g:i A" }}</p>
+    </div>
+    
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Order Status Timeline -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="bi bi-diagram-3 me-2"></i>Order Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="status-timeline">
+                        <div class="status-step {% if order.status in 'pending,confirmed,processing,ready_for_delivery,out_for_delivery,delivered' %}completed{% endif %}">
+                            <div class="step-circle">1</div>
+                            <div class="step-label">Pending</div>
+                        </div>
+                        <div class="status-step {% if order.status in 'confirmed,processing,ready_for_delivery,out_for_delivery,delivered' %}completed{% endif %}">
+                            <div class="step-circle">2</div>
+                            <div class="step-label">Confirmed</div>
+                        </div>
+                        <div class="status-step {% if order.status in 'processing,ready_for_delivery,out_for_delivery,delivered' %}completed{% endif %}">
+                            <div class="step-circle">3</div>
+                            <div class="step-label">Processing</div>
+                        </div>
+                        <div class="status-step {% if order.status in 'ready_for_delivery,out_for_delivery,delivered' %}completed{% endif %}">
+                            <div class="step-circle">4</div>
+                            <div class="step-label">Ready</div>
+                        </div>
+                        <div class="status-step {% if order.status in 'out_for_delivery,delivered' %}completed{% endif %}">
+                            <div class="step-circle">5</div>
+                            <div class="step-label">Shipping</div>
+                        </div>
+                        <div class="status-step {% if order.status == 'delivered' %}active{% endif %}">
+                            <div class="step-circle"><i class="bi bi-check"></i></div>
+                            <div class="step-label">Delivered</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3 p-3 bg-light rounded">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="badge badge-custom" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                    {{ order.get_status_display }}
+                                </span>
+                                {% if order.assigned_staff %}
+                                <div class="mt-2">
+                                    <small class="text-muted">Assigned Rider:</small><br>
+                                    <strong>{{ order.assigned_staff.get_full_name }}</strong>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="text-end">
+                                <small class="text-muted">Last updated</small><br>
+                                <strong>{{ order.updated_at|date:"M d, g:i A" }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Order Items -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="bi bi-bag-check me-2"></i>Order Items</h5>
+                </div>
+                <div class="card-body">
+                    {% for item in order.items.all %}
+                    <div class="order-item">
+                        <div class="item-details">
+                            <div class="item-name">{{ item.product_name }}</div>
+                            <div class="item-category">{{ item.product.category.name }}</div>
+                        </div>
+                        <div class="item-qty">{{ item.quantity }}x</div>
+                        <div class="item-price">
+                            <div class="price-label">₱{{ item.product_price }}</div>
+                            <div class="price-value">₱{{ item.total_price }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Order History -->
+            {% if order.status_history.all %}
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-clock-history me-2"></i>Order History</h5>
+                </div>
+                <div class="card-body">
+                    {% for history in order.status_history.all|dictsort:"created_at"|slice:"-5:" %}
+                    <div class="timeline-item {% if forloop.first %}active{% endif %}">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content flex-grow-1">
+                            <h6>{{ history.get_status_display }}</h6>
+                            <small>{{ history.created_at|date:"M d, Y - g:i A" }}</small>
+                            {% if history.notes %}
+                            <p class="text-muted mb-0 mt-1">{{ history.notes }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Order Summary -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="bi bi-receipt me-2"></i>Order Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="summary-row">
+                        <span class="summary-label">Subtotal</span>
+                        <span class="summary-value">₱{{ order.subtotal }}</span>
+                    </div>
+                    
+                    {% if order.discount_amount > 0 %}
+                    <div class="summary-row">
+                        <span class="summary-label"><i class="bi bi-percent me-1"></i>Discount</span>
+                        <span class="summary-value discount">-₱{{ order.discount_amount }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="summary-row">
+                        <span class="summary-label"><i class="bi bi-truck me-1"></i>Delivery</span>
+                        <span class="summary-value" style="color: #28a745;">FREE</span>
+                    </div>
+                    
+                    <div class="summary-row total">
+                        <span>Total Amount</span>
+                        <span class="summary-value total">₱{{ order.total_amount }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Delivery Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="bi bi-geo-alt me-2"></i>Delivery Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="info-block">
+                        <div class="info-label">Customer Name</div>
+                        <div class="info-value">{{ order.customer_name }}</div>
+                    </div>
+                    
+                    <div class="info-block">
+                        <div class="info-label">Email</div>
+                        <div class="info-value"><a href="mailto:{{ order.customer_email }}">{{ order.customer_email }}</a></div>
+                    </div>
+                    
+                    <div class="info-block">
+                        <div class="info-label">Phone</div>
+                        <div class="info-value"><a href="tel:{{ order.customer_phone }}">{{ order.customer_phone }}</a></div>
+                    </div>
+                    
+                    <div class="info-block">
+                        <div class="info-label">Delivery Address</div>
+                        <div class="info-value">{{ order.delivery_address }}</div>
+                    </div>
+                    
+                    <div class="info-block">
+                        <div class="info-label">Payment Method</div>
+                        <div class="info-value">
+                            <span class="badge badge-custom" style="background: #667eea; color: white;">
+                                {{ order.get_payment_method_display }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-block">
+                        <div class="info-label">Order Date</div>
+                        <div class="info-value">{{ order.created_at|date:"M d, Y - g:i A" }}</div>
+                    </div>
+                    
+                    {% if order.delivered_at %}
+                    <div class="info-block">
+                        <div class="info-label">Delivered Date</div>
+                        <div class="info-value" style="color: #28a745; font-weight: 600;">
+                            {{ order.delivered_at|date:"M d, Y - g:i A" }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

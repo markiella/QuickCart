@@ -1,0 +1,25 @@
+{% if notifications %}
+<div class="container mt-3">
+    {% for notification in notifications %}
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <div class="d-flex align-items-start">
+            {% if notification.notification_type == 'rider_assigned' %}
+            <i class="bi bi-truck-front text-warning me-3" style="font-size: 1.5rem;"></i>
+            {% elif notification.notification_type == 'new_order' %}
+            <i class="bi bi-bag-check text-success me-3" style="font-size: 1.5rem;"></i>
+            {% elif notification.notification_type == 'order_status_update' %}
+            <i class="bi bi-arrow-repeat text-primary me-3" style="font-size: 1.5rem;"></i>
+            {% else %}
+            <i class="bi bi-bell text-info me-3" style="font-size: 1.5rem;"></i>
+            {% endif %}
+            <div class="flex-grow-1">
+                <strong>{{ notification.title }}</strong>
+                <p class="mb-0">{{ notification.message }}</p>
+                <small class="text-muted">{{ notification.created_at }}</small>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}

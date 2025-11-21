@@ -1,0 +1,128 @@
+{% extends 'sidebar_base.html' %}
+
+{% block title %}Rider Dashboard - Quick Cart{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-speedometer2 me-2"></i>Rider Dashboard</h2>
+        <span class="badge bg-info">{{ user.get_role_display }}</span>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="dashboard-card">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="bi bi-clock-history" style="font-size: 2rem;"></i>
+                    </div>
+                    <div>
+                        <div class="dashboard-stat">{{ pending_orders }}</div>
+                        <div>Pending Orders</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="dashboard-card green">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="bi bi-bag-check" style="font-size: 2rem;"></i>
+                    </div>
+                    <div>
+                        <div class="dashboard-stat">{{ total_orders }}</div>
+                        <div>Total Orders</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="dashboard-card blue">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="bi bi-people" style="font-size: 2rem;"></i>
+                    </div>
+                    <div>
+                        <div class="dashboard-stat">{{ total_customers }}</div>
+                        <div>Total Customers</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Recent Orders -->
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="bi bi-list-ul me-2"></i>Recent Deliveries</h5>
+                    <a href="{% url 'orders:staff_order_list' %}" class="btn btn-sm btn-outline-primary">View All Deliveries</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_orders %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Customer</th>
+                                    <th>Status</th>
+                                    <th>Total</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in recent_orders %}
+                                <tr>
+                                    <td><strong>{{ order.order_number }}</strong></td>
+                                    <td>{{ order.customer_name }}</td>
+                                    <td>
+                                        <span class="badge order-status status-{{ order.status }}">
+                                            {{ order.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td><strong>₱{{ order.total_amount }}</strong></td>
+                                    <td>{{ order.created_at|date:"M d, g:i A" }}</td>
+                                    <td>
+                                        <a href="{% url 'orders:staff_order_detail' order.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3">No recent orders</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-lightning me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'orders:staff_order_list' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-truck me-2"></i>My Deliveries
+                        </a>
+                        <a href="{% url 'store:product_list' %}" class="btn btn-outline-success">
+                            <i class="bi bi-shop me-2"></i>Browse Store
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
